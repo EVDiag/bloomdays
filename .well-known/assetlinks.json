@@ -4,7 +4,7 @@
     "target": {
       "namespace": "android_app",
       "package_name": "family.bloomdays",
-      "sha256_cert_fingerprints": ["PASTE_APP_SIGNING_SHA256_HERE"]
+      "sha256_cert_fingerprints": ["96:FF:0D:69:68:3C:EE:74:25:7F:95:E7:C4:EC:FF:23:4B:7C:FB:03:62:E5:CD:F5:36:71:0C:53:43:92:1C:CA"]
     }
   }
 ]
