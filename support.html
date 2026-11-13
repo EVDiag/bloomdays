@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="theme-color" content="#f9f2e8">
+<title>Support — Bloom</title>
+<meta name="description" content="Questions, bugs and ideas: write to support@bloomdays.family, or send a message from this page. A person reads every one.">
+<link rel="canonical" href="https://bloomdays.family/support.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Bloom">
+<meta property="og:title" content="Support — Bloom">
+<meta property="og:description" content="Questions, bugs and ideas: write to support@bloomdays.family, or send a message from this page. A person reads every one.">
+<meta property="og:url" content="https://bloomdays.family/support.html">
+<meta property="og:image" content="https://bloomdays.family/img/og.png">
+<link rel="icon" type="image/png" href="/favicon.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="preload" href="/fonts/fraunces-latin-opsz-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/outfit-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/css/site.css">
+<script src="/js/site.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="site-head"><div class="wrap">
+  <a class="brand" href="/index.html"><img src="/img/paint/logo.webp" width="40" height="40" alt=""> <span>Bloom</span></a>
+  <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav">Menu</button>
+  <nav id="site-nav" class="site-nav" aria-label="Main"><a href="/index.html#chapters">Chapters</a><a href="/index.html#ask">Ask Bloom</a><a href="/index.html#family">Family</a><a href="/privacy.html">Privacy</a><a href="/support.html" aria-current="page">Support</a></nav>
+</div></header>
+<main id="main">
+<section class="wrap page-head narrow">
+  <h1>Questions, bugs and ideas</h1>
+  <p class="lede">Write to us and a person reads it.</p>
+</section>
+
+<section class="wrap narrow section-sm" id="write">
+  <div class="card warm write-card">
+    <h2>Write to us</h2>
+    <p class="mail-line"><a href="mailto:support@bloomdays.family">support@bloomdays.family</a></p>
+    <p class="fine">Tell us what you were doing and what you expected. For a problem in the app, your phone and the last line of Me in Bloom (it says the version) help us find it quickly.</p>
+  </div>
+</section>
+
+<section class="wrap narrow section-sm" id="message">
+  <h2>Send a message</h2>
+  <form id="contact" class="card form-card" novalidate action="#" method="post">
+    <div class="field">
+      <label for="c-email">Your email</label>
+      <input id="c-email" name="email" type="email" autocomplete="email" required aria-describedby="c-email-hint c-email-err">
+      <p id="c-email-hint" class="hint">So we can reply. Used for nothing else.</p>
+      <p id="c-email-err" class="err" aria-live="polite"></p>
+    </div>
+    <fieldset class="field types" aria-describedby="c-type-err">
+      <legend>What is it about?</legend>
+      <div class="chips" role="radiogroup" aria-label="What is it about?">
+        <label class="chip"><input type="radio" name="type" value="bug"> Report a bug</label>
+        <label class="chip"><input type="radio" name="type" value="idea"> New idea</label>
+        <label class="chip"><input type="radio" name="type" value="feature"> Feature request</label>
+        <label class="chip"><input type="radio" name="type" value="feedback"> Feedback</label>
+        <label class="chip"><input type="radio" name="type" value="other"> Something else</label>
+      </div>
+      <p id="c-type-err" class="err" aria-live="polite"></p>
+    </fieldset>
+    <div class="field">
+      <label for="c-msg">Your message</label>
+      <textarea id="c-msg" name="message" rows="7" maxlength="5000" required aria-describedby="c-msg-hint c-msg-err c-msg-count"></textarea>
+      <p id="c-msg-hint" class="hint" hidden>Your phone, and the last line of Me in Bloom (it says the version), help us find it.</p>
+      <p id="c-msg-count" class="hint count" aria-live="polite"></p>
+      <p id="c-msg-err" class="err" aria-live="polite"></p>
+    </div>
+    <div class="hp" aria-hidden="true"><label for="c-web">Leave this field empty</label><input id="c-web" name="website" type="text" tabindex="-1" autocomplete="off"></div>
+    <button class="btn" type="submit">Send message</button>
+    <p class="form-status" id="c-status" role="status" aria-live="polite"></p>
+    <p class="fine">We use your email only to answer you. <a href="/privacy.html#support">Privacy</a></p>
+  </form>
+  <div id="c-fallback" class="card sage fallback" hidden>
+    <p>The form isn't sending yet. Please write to <strong><a href="mailto:support@bloomdays.family">support@bloomdays.family</a></strong> — your message is below, ready to copy.</p>
+    <textarea readonly rows="7" aria-label="Your message, ready to copy"></textarea>
+    <div class="fallback-acts">
+      <button class="btn" type="button" data-copy-msg>Copy message</button>
+      <a class="btn quiet" data-mailto href="mailto:support@bloomdays.family">Open your email app</a>
+    </div>
+  </div>
+  <noscript><p>The form needs JavaScript — or write to <a href="mailto:support@bloomdays.family">support@bloomdays.family</a>.</p></noscript>
+</section>
+
+<section class="wrap narrow section-sm" id="faq">
+  <h2>Common questions</h2>
+  <details><summary>Is Bloom free?</summary>
+    <p>Yes. Bloom is free to use. Pro is one payment in the store, for the full week-by-week journey, the kick counter and the contraction timer. There is no subscription.</p></details>
+  <details><summary>Where is my data?</summary>
+    <p>On your phone. What you log stays there. Only what a feature needs leaves it: your question when you ask Bloom, a call's audio when you call her, and a copy of what she remembers if you turn the memory backup on. <a href="/privacy.html#leaves">What leaves your phone</a>.</p></details>
+  <details><summary>How do I export or delete my data?</summary>
+    <p>In the app: Me → Privacy &amp; data. <em>Export my data</em> saves everything as a file; <em>Delete all my data</em> removes it from your phone; <em>Forget everything Bloom has learned</em> clears her memory, here and in the backup. For anything kept on Bloom's server, write to us.</p></details>
+  <details><summary>Is Bloom a medical device, or birth control?</summary>
+    <p>No, and no. Bloom gives general information and helps you keep track; it does not diagnose or treat. Bloom is not birth control: the fertile window is an estimate and must not be used to prevent a pregnancy. For anything about your health, ask your doctor or midwife. In an emergency, call your local emergency number.</p></details>
+  <details><summary>Which phones does Bloom run on?</summary>
+    <p>iPhone with iOS 16.4 or later, and phones with Google Play.</p></details>
+  <details><summary>How does Pro work?</summary>
+    <p>You buy Pro once, in the App Store or Google Play, and the store takes the payment — Bloom never sees your card. If you reinstall Bloom and Pro does not come back by itself, write to us with the store's receipt and we will put it right.</p></details>
+  <details><summary>What happens when I ask Bloom or call her?</summary>
+    <p>Your question, with a short note of where you are (your chapter, your week or day), goes through Bloom's own server to Anthropic, which writes the answer. A call goes straight from your phone to OpenAI, which runs Bloom's voice. Nothing is used for ads, and Bloom's server keeps no copy of your questions. <a href="/privacy.html#ai">The details</a>.</p></details>
+  <details><summary>How do invites work?</summary>
+    <p>In the app, Us → Invite a friend gives you a code and a link to send. A friend who already has Bloom enters the code in the same place, under <em>Have a code?</em></p></details>
+  <details><summary>Bloom said something wrong — what do I do?</summary>
+    <p>Tell us. Choose <em>Report a bug</em> or <em>Feedback</em> above and write what you asked and what Bloom said. Bloom can be wrong; your doctor or midwife has the last word.</p></details>
+</section>
+
+<section class="wrap narrow section-sm" id="rate">
+  <h2>Rate Bloom</h2>
+  <p>A few words in the store help other women find Bloom.</p>
+  <div class="badges">
+    <span class="badge" data-store="appStore" aria-disabled="true"><img src="/img/badges/app-store.svg" width="144" height="48" alt="Download on the App Store"></span>
+    <span class="badge" data-store="googlePlay" aria-disabled="true"><img src="/img/badges/google-play.svg" width="162" height="48" alt="Get it on Google Play"></span>
+  </div>
+  <p class="badge-note">Coming soon to the App Store and Google Play.</p>
+  <p class="fine">Bloom is general information, not medical advice, and not birth control.</p>
+</section>
+</main>
+<footer class="site-foot"><div class="wrap">
+  <p class="tagline">Bloom — a companion for every season of becoming a mother.</p>
+  <p><a href="/support.html">Support</a> · <a href="/privacy.html">Privacy</a> · <a href="/privacy.html#health-data">Consumer health data</a> · <a href="/terms.html">Terms</a> · <a href="mailto:support@bloomdays.family">support@bloomdays.family</a></p>
+  <p class="fine">Bloom is general information, not medical advice. Bloom is not a medical device and not birth control.</p>
+  <p class="fine">© 2026 Bloom</p>
+</div></footer>
+<script type="module" src="/js/support.js"></script>
+</body>
+</html>
