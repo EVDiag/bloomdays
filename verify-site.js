@@ -15,11 +15,11 @@ const ORIGIN = `http://localhost:${PORT}`;
 
 // today's assetlinks.json (731cf61), byte for byte
 const ASSETLINKS_SHA = 'ba738b9df485d5fd4049d17ce3313b69d76a8e39e847125c1dd260a1ce5614ad';
-const PAGES_SPEC = ['index.html', 'support.html', 'privacy.html', 'terms.html', '404.html'];
+const PAGES_SPEC = ['index.html', 'support.html', 'privacy.html', 'terms.html', '404.html', 'guide.html'];
 const PAGES = PAGES_SPEC.filter(f => fs.existsSync(path.join(ROOT, f)));
 // every page of every language (the English pages first); the generic checks (§5 requests, §11 phones) run over all of them
 const XX_LANGS = ['cs', 'ru', 'th', 'zh'];
-const XX_PAGES = XX_LANGS.flatMap(l => ['index.html', 'support.html', 'privacy.html'].map(p => `${l}/${p}`)).filter(f => fs.existsSync(path.join(ROOT, f)));
+const XX_PAGES = XX_LANGS.flatMap(l => ['index.html', 'support.html', 'privacy.html', 'guide.html'].map(p => `${l}/${p}`)).filter(f => fs.existsSync(path.join(ROOT, f)));
 const ALL_PAGES = [...PAGES, ...XX_PAGES];
 const BADGE_LINE = 'Coming soon to the App Store and Google Play.';
 
@@ -39,7 +39,8 @@ const readBuf = f => fs.readFileSync(path.join(ROOT, f));
 const exists = f => fs.existsSync(path.join(ROOT, f));
 const sha256 = b => crypto.createHash('sha256').update(b).digest('hex');
 const noComments = html => html.replace(/<!--[\s\S]*?-->/g, '');
-const pageText = f => noComments(read(f));
+// the words of a page, as the word checks read them: without comments and without the search engines' JSON-LD block (§16 reads that)
+const pageText = f => noComments(read(f)).replace(/<script type="application\/ld\+json">[\s\S]*?<\/script>\n?/g, '');
 // visible text, tags removed
 const textOf = html => noComments(html).replace(/<script[\s\S]*?<\/script>/gi, ' ').replace(/<style[\s\S]*?<\/style>/gi, ' ')
   .replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&#39;|&rsquo;/g, "'").replace(/\s+/g, ' ');
@@ -568,15 +569,15 @@ SECTIONS.push(async () => {
       const alt = [...h.matchAll(/<link rel="alternate" hreflang="([^"]+)" href="([^"]+)">/g)].map(m => m[1]);
       check(`${f}: hreflang alternates`, page === 'privacy.html' ? JSON.stringify(alt) === '["cs","ru","th","zh-Hans"]' : JSON.stringify(alt) === '["en","cs","ru","th","zh-Hans","x-default"]', alt.join(' '));
     }
-    check(`${l}: header identical on its pages`, heads.length === 3 && heads.every(x => x && x === heads[0]));
-    check(`${l}: footer identical on its pages`, foots.length === 3 && foots.every(x => x && x === foots[0]));
+    check(`${l}: header identical on its pages`, heads.length === B.pagesFor(l).length && heads.every(x => x && x === heads[0]));
+    check(`${l}: footer identical on its pages`, foots.length === B.pagesFor(l).length && foots.every(x => x && x === foots[0]));
   }
 });
 
 // ── §2 (switch in a browser) the switch keeps the part of the page she is on (final review, Review Focus 4)
 SECTIONS.push(async () => {
   if (!browserSection(2, 'the switch keeps her place')) return;
-  for (const [from, link, want] of [['/index.html#ask', 'CS', '/cs/index.html#ask'], ['/zh/index.html#family', 'EN', '/index.html#family'], ['/cs/support.html#faq', 'RU', '/ru/support.html#faq'], ['/cs/privacy.html#choices', 'EN', '/index.html']]) {
+  for (const [from, link, want] of [['/index.html#ask', 'CS', '/cs/index.html#ask'], ['/zh/index.html#family', 'EN', '/index.html#family'], ['/cs/support.html#faq', 'RU', '/ru/support.html#faq'], ['/cs/privacy.html#choices', 'EN', '/index.html'], ['/guide.html#newborn', 'CS', '/cs/guide.html#newborn'], ['/th/guide.html#privacy', '中文', '/zh/guide.html#privacy']]) {
     await withPage(from, {}, async p => {
       await Promise.all([p.waitForEvent('framenavigated'), p.evaluate(t => [...document.querySelectorAll('.lang-switch a')].find(a => a.textContent === t).click(), link)]);
       await p.waitForLoadState('load');
@@ -751,8 +752,8 @@ SECTIONS.push(async () => {
   } finally { fs.rmSync(tmp, { recursive: true, force: true }); }
   check('LANGS', JSON.stringify(B.LANGS) === '["en","cs","ru","th","zh"]');
   check('HTML_LANG', JSON.stringify(B.HTML_LANG) === '{"en":"en","cs":"cs","ru":"ru","th":"th","zh":"zh-Hans"}');
-  check('pagesFor(en)', JSON.stringify(B.pagesFor('en')) === '["index.html","support.html","privacy.html","terms.html","404.html"]');
-  check('pagesFor(cs)', JSON.stringify(B.pagesFor('cs')) === '["cs/index.html","cs/support.html","cs/privacy.html"]');
+  check('pagesFor(en)', JSON.stringify(B.pagesFor('en')) === '["index.html","support.html","privacy.html","terms.html","404.html","guide.html"]', JSON.stringify(B.pagesFor('en')));
+  check('pagesFor(cs)', JSON.stringify(B.pagesFor('cs')) === '["cs/index.html","cs/support.html","cs/privacy.html","cs/guide.html"]', JSON.stringify(B.pagesFor('cs')));
   for (const lang of B.LANGS.filter(B.hasLang)) for (const page of B.pagesFor(lang)) {
     const keys = B.keysUsed(lang, page);
     check(`${page}: keysUsed is not empty`, keys.length > 0);
@@ -764,12 +765,13 @@ SECTIONS.push(async () => {
   check('a missing app word stops the build with its name', (() => { try { B.expand('{{app:no.such}}', 'en', {}); return false; } catch (e) { return /missing app word "no\.such" for en/.test(e.message); } })());
   check('{{key}} is escaped, {{{key}}} is not', B.expand('{{x}}|{{{x}}}', 'en', {}, { x: 'a & <b>' }) === 'a &amp; &lt;b&gt;|a & <b>');
   // the switch
-  const sw = f => between(read(f), /<nav class="lang-switch"[\s\S]*?<\/nav>/);
+  const sw = f => exists(f) ? between(read(f), /<nav class="lang-switch"[\s\S]*?<\/nav>/) : '';
   const links = f => [...sw(f).matchAll(/<a href="([^"]+)" hreflang="([^"]+)" lang="([^"]+)"( aria-current="true")?>([^<]+)<\/a>/g)].map(m => ({ href: m[1], hreflang: m[2], lang: m[3], cur: !!m[4], text: m[5] }));
   const want = { 'index.html': ['/index.html', '/cs/index.html', '/ru/index.html', '/th/index.html', '/zh/index.html'],
     'support.html': ['/support.html', '/cs/support.html', '/ru/support.html', '/th/support.html', '/zh/support.html'],
     'privacy.html': ['/privacy.html', '/cs/index.html', '/ru/index.html', '/th/index.html', '/zh/index.html'],
-    'terms.html': ['/terms.html', '/cs/index.html', '/ru/index.html', '/th/index.html', '/zh/index.html'] };
+    'terms.html': ['/terms.html', '/cs/index.html', '/ru/index.html', '/th/index.html', '/zh/index.html'],
+    'guide.html': ['/guide.html', '/cs/guide.html', '/ru/guide.html', '/th/guide.html', '/zh/guide.html'] };
   for (const [f, hrefs] of Object.entries(want)) {
     const L = links(f);
     check(`${f}: the switch has EN CS RU TH 中文`, L.map(l => l.text).join(' ') === 'EN CS RU TH 中文', L.map(l => l.text).join(' '));
@@ -808,7 +810,7 @@ SECTIONS.push(async () => {
     check(`${l}: every English key has a value`, missing.length === 0, missing.slice(0, 8).join(' '));
     const extra = Object.keys(W).filter(k => !(k in en));
     check(`${l}: no key English lacks`, extra.length === 0, extra.join(' '));
-    const same = Object.keys(en).filter(k => W[k] === en[k] && !SAME_OK.has(k) && /[a-z]{3}/.test(en[k]));
+    const same = Object.keys(en).filter(k => W[k] === en[k] && !SAME_OK.has(k) && /[a-z]{3}/.test(en[k].replace(/\{\{\{?[^}]+\}\}\}?/g, '').replace(/<[^>]+>/g, '')));   // a value of app words and markup only is the same in every language
     check(`${l}: nothing left in English`, same.length === 0, same.slice(0, 8).join(' '));
     for (const k of Object.keys(W)) {
       const ph = s => JSON.stringify([...String(s).matchAll(/\{\{\{?([^{}]+)\}?\}\}|\{(\w+)\}/g)].map(m => m[1] || m[2]).sort());
@@ -831,7 +833,7 @@ SECTIONS.push(async () => {
     for (const f of B.pagesFor(l)) {
       check(`${f} exists`, exists(f));
       if (!exists(f)) continue;
-      const h = read(f), t = plain(h), low = t.toLowerCase(), hl = noComments(h).toLowerCase();
+      const h = read(f), t = plain(h), low = t.toLowerCase(), hl = pageText(f).toLowerCase();   // without the JSON-LD block (§16 checks it names both platforms)
       check(`${f}: <html lang="${B.HTML_LANG[l]}">`, h.includes(`<html lang="${B.HTML_LANG[l]}">`));
       check(`${f}: og:locale ${B.OG_LOCALE[l]}`, h.includes(`<meta property="og:locale" content="${B.OG_LOCALE[l]}">`));
       for (const w of [...BAN.all, ...BAN[l]]) check(`${f}: no "${w}"`, !hl.includes(w));
@@ -997,6 +999,230 @@ SECTIONS.push(async () => {
       check(`${f} @360, text 130 %: no text over other text`, !overlap, overlap);
       await p.click('.nav-toggle');
       check(`${f} @360, text 130 %: the menu still opens`, (await p.getAttribute('.nav-toggle', 'aria-expanded')) === 'true');
+    });
+  }
+});
+
+// ── §15 the guide (guide.html in every language): its screens, its sections, its words
+const GUIDE_SHOTS = ['start', 'cycle-today', 'trying-today', 'today-pregnant', 'newborn-now', 'peri-today', 'ask', 'us', 'privacy', 'pro'];
+SECTIONS.push(async () => {
+  if (!section(15, 'the guide — its screens')) return;
+  for (const l of ['en', 'cs', 'ru', 'th', 'zh']) for (const n of GUIDE_SHOTS) {
+    const p = l === 'en' ? `img/screens/${n}.webp` : `img/screens/${l}/${n}.webp`;
+    if (!exists(p)) { check(`${p} exists`, false); continue; }
+    const b = readBuf(p), dim = webpSize(b);
+    check(`${p}: 780 × 1688`, dim && dim.w === 780 && dim.h === 1688, JSON.stringify(dim));
+    check(`${p}: ≤ 180 KB`, b.length <= 180 * 1024, String(b.length));
+  }
+});
+
+// the guide's sections, in order, and each one's picture
+const GUIDE_SECS = ['start', 'cycle', 'trying', 'pregnant', 'newborn', 'peri', 'ask', 'family', 'privacy', 'pro'];
+const GUIDE_SHOT_OF = { start: 'start', cycle: 'cycle-today', trying: 'trying-today', pregnant: 'today-pregnant', newborn: 'newborn-now', peri: 'peri-today', ask: 'ask', family: 'us', privacy: 'privacy', pro: 'pro' };
+// words that must stand in their section, per language: not birth control (Trying), not medical advice (Ask Bloom), the kicks warning (Pregnancy)
+const GUIDE_MUST = {
+  en: { trying: ['not birth control'], ask: ['not medical advice'], pregnant: ['midwife', 'straight away', 'any hour', 'fewer movements'] },
+  cs: { trying: ['antikoncepce'], ask: ['lékařské rady'], pregnant: ['porodní asistent', 'hned', 'kteroukoli hodinu', 'méně pohybů'] },
+  ru: { trying: ['контрацепц'], ask: ['медицинск'], pregnant: ['акушер', 'сразу', 'в любое время', 'меньше шевелений'] },
+  th: { trying: ['คุมกำเนิด'], ask: ['คำแนะนำทางการแพทย์'], pregnant: ['ผดุงครรภ์', 'ทันที', 'กี่โมง', 'ดิ้นน้อยกว่าปกติ'] },
+  zh: { trying: ['避孕'], ask: ['医疗建议'], pregnant: ['助产士', '立刻', '任何时间', '胎动比平时少'] },
+};
+const GUIDE_CREDITS = { en: /credit/i, cs: /kredit/i, ru: /кредит/i, th: /เครดิต/, zh: /额度/ };
+const GUIDE_LANGS_BUILT = ['en', 'cs', 'ru', 'th', 'zh'];
+SECTIONS.push(async () => {
+  if (!section(15, 'the guide — its sections and words')) return;
+  const B = require(path.join(ROOT, 'build.js'));
+  check('siteForm drops a price: "Upgrade to Pro · $3 lifetime" → "Upgrade to Pro"', B.siteForm('Upgrade to Pro · $3 lifetime', 'menu.pro') === 'Upgrade to Pro', B.siteForm('Upgrade to Pro · $3 lifetime', 'menu.pro'));
+  check('siteForm drops a price: "升级Pro · $3终身有效" → "升级Pro"', B.siteForm('升级Pro · $3终身有效', 'menu.pro') === '升级Pro');
+  const aw = JSON.parse(read('src/app-words.json'));
+  for (const k of ['menu.pro', 'pro.locked.cta']) for (const l of ['en', 'cs', 'ru', 'th', 'zh'])
+    check(`app word ${k} (${l}) has no price`, aw[k] && typeof aw[k][l] === 'string' && !/[$\d]/.test(aw[k][l]), aw[k] && aw[k][l]);
+  for (const l of GUIDE_LANGS_BUILT) {
+    const f = l === 'en' ? 'guide.html' : `${l}/guide.html`;
+    if (!exists(f)) { check(`${f} exists`, false); continue; }
+    const h = pageText(f), W = B.words(l);
+    const main = between(h, /<main[\s\S]*?<\/main>/);
+    const ids = [...main.matchAll(/<section class="guide-sec" id="([^"]+)"/g)].map(m => m[1]);
+    check(`${f}: the ten sections in order`, JSON.stringify(ids) === JSON.stringify(GUIDE_SECS), ids.join(' '));
+    const toc = between(main, /<nav class="toc"[\s\S]*?<\/nav>/);
+    check(`${f}: the contents list links the ten`, JSON.stringify([...toc.matchAll(/href="#([^"]+)"/g)].map(m => m[1])) === JSON.stringify(GUIDE_SECS));
+    check(`${f}: the contents list is labelled`, /<nav class="toc" aria-label="[^"]+"/.test(toc));
+    const alts = new Set();
+    for (const sId of GUIDE_SECS) {
+      const sec = between(main, new RegExp(`<section class="guide-sec" id="${sId}"[\\s\\S]*?</section>`));
+      const txt = textOf(sec);
+      for (const lbl of ['guide.lbl.for', 'guide.lbl.where', 'guide.lbl.how']) check(`${f} #${sId}: "${W[lbl]}"`, !!W[lbl] && txt.includes(W[lbl]));
+      check(`${f} #${sId}: a path of the app's words`, /<p class="path">[\s\S]*?<(span|em)>[^<]+<\/\1>/.test(sec));
+      const ol = between(sec, /<ol class="steps">[\s\S]*?<\/ol>/), n = (ol.match(/<li>/g) || []).length;
+      check(`${f} #${sId}: 3 to 6 steps`, n >= 3 && n <= 6, String(n));
+      const img = [...sec.matchAll(/<figure class="phone"[^>]*><img src="([^"]+)" width="390" height="844" alt="([^"]*)" loading="lazy">/g)];
+      check(`${f} #${sId}: one picture, lazy, 390 × 844`, img.length === 1, String(img.length));
+      if (img.length) {
+        const want = `/img/screens${l === 'en' ? '' : '/' + l}/${GUIDE_SHOT_OF[sId]}.webp`;
+        check(`${f} #${sId}: the picture is ${want}`, img[0][1] === want, img[0][1]);
+        check(`${f} #${sId}: the picture has its own alt`, img[0][2].trim().length > 4 && !alts.has(img[0][2]), img[0][2]);
+        if (l !== 'en') check(`${f} #${sId}: the picture's alt is in her language`, img[0][2] !== B.words('en')[`guide.${sId}.shotAlt`], img[0][2]);
+        alts.add(img[0][2]);
+      }
+      for (const w of ((GUIDE_MUST[l] || {})[sId] || [])) check(`${f} #${sId}: says "${w}"`, txt.toLowerCase().includes(w.toLowerCase()));
+    }
+    // a place in the app is always the app's own word: in the words, every <em> and every path <span> holds an {{app:…}}
+    for (const [k, v] of Object.entries(W)) if (/^guide\.[a-z]+\.(where|step\d|good)$/.test(k)) {
+      const typed = [...v.matchAll(/<(em|span)>(?!\{\{app:[^}]+\}\}<\/\1>)([^<]*)<\/\1>/g)].map(m => m[2]);
+      check(`${l}: ${k} names the app's places by their app words`, typed.length === 0, typed.join(' | '));
+    }
+    const ask = between(main, /<section class="guide-sec" id="ask"[\s\S]*?<\/section>/);
+    check(`${f} #ask: says where a question and a call go (privacy.html#ai / #leaves)`, /href="[^"]*\/privacy\.html#(ai|leaves)"/.test(ask));
+    check(`${f}: <html lang>`, h.includes(`<html lang="${B.HTML_LANG[l]}">`));
+    const alt = [...h.matchAll(/<link rel="alternate" hreflang="([^"]+)" href="([^"]+)">/g)].map(m => m[1] + '=' + m[2]);
+    check(`${f}: hreflang to the five guides + x-default`, JSON.stringify(alt) === JSON.stringify(['en', 'cs', 'ru', 'th', 'zh'].map(x => `${B.HTML_LANG[x]}=https://bloomdays.family/${x === 'en' ? '' : x + '/'}guide.html`).concat('x-default=https://bloomdays.family/guide.html')), alt.join(' '));
+    const swl = [...between(h, /<nav class="lang-switch"[\s\S]*?<\/nav>/).matchAll(/<a href="([^"]+)"/g)].map(m => m[1]);
+    check(`${f}: the switch goes to the five guides (without JavaScript too)`, JSON.stringify(swl) === JSON.stringify(['/guide.html', '/cs/guide.html', '/ru/guide.html', '/th/guide.html', '/zh/guide.html']), swl.join(' '));
+    const all = textOf(main);
+    check(`${f}: no price`, !/\$|\d\s?(Kč|₽|฿|元)|[€£¥₽฿]\s?\d/.test(all), (all.match(/.{0,30}(\$|Kč|₽|฿|元).{0,30}/) || [''])[0]);
+    check(`${f}: no credits`, !GUIDE_CREDITS[l].test(all), (all.match(new RegExp('.{0,30}' + GUIDE_CREDITS[l].source + '.{0,30}', 'i')) || [''])[0]);
+    for (const w of ['android', 'андроид', 'แอนดรอยด์', '安卓', 'coming soon', 'evdiag', 'mama']) check(`${f}: no "${w}"`, !h.toLowerCase().includes(w));
+  }
+  // every app word the guide names was walked in the app (Bloom-app/tools/site/guide-walk.js), where that tool is at hand
+  const gw = process.env.GUIDE_WALK || path.join(ROOT, '..', 'Bloom-app', 'tools', 'site', 'guide-walk.js');
+  if (fs.existsSync(gw) && fs.existsSync(path.join(path.dirname(gw), '..', 'paint', 'raw', 'guide-walk.json'))) {
+    const { spawnSync } = require('node:child_process');
+    const r = spawnSync(process.execPath, [gw, '--app', path.join(path.dirname(gw), '..', '..', 'www'), '--check', ROOT], { encoding: 'utf8' });
+    check('guide-walk --check: every app word of the guide was seen in the app (or is a phone step)', r.status === 0, (r.stdout + r.stderr).trim().split('\n').slice(0, 6).join(' | '));
+  } else console.log('  SKIP guide-walk --check (no Bloom-app walk record beside this repo)');
+});
+
+// ── §15 (the way in) the guide is reached from Home, the footer and Support, in every language
+SECTIONS.push(async () => {
+  if (!section(15, 'the guide — the way in')) return;
+  const B = require(path.join(ROOT, 'build.js'));
+  const HOWTO = ['cycle', 'trying', 'pregnant', 'newborn', 'peri', 'ask', 'family', 'privacy', 'pro'];
+  for (const l of ['en', 'cs', 'ru', 'th', 'zh']) {
+    const root = l === 'en' ? '' : '/' + l, home = l === 'en' ? 'index.html' : `${l}/index.html`, guide = l === 'en' ? 'guide.html' : `${l}/guide.html`;
+    if (!exists(home) || !exists(guide)) { check(`${home} and ${guide} exist`, false); continue; }
+    const h = pageText(home), gids = idsOf(read(guide));
+    const links = [...h.matchAll(/<a class="howto" href="([^"]+)">([^<]+)<\/a>/g)];
+    check(`${home}: nine "How it works" links, in order`, JSON.stringify(links.map(m => m[1])) === JSON.stringify(HOWTO.map(x => `${root}/guide.html#${x}`)), links.map(m => m[1]).join(' '));
+    check(`${home}: their words are her language's`, links.every(m => m[2] === B.words(l)['home.howto']));
+    for (const x of HOWTO) check(`${guide}: #${x} exists`, gids.has(x));
+    const ch = [...h.matchAll(/<article class="card chapter">[\s\S]*?<\/article>/g)].map(m => m[0]);
+    check(`${home}: each chapter card links its own part of the guide`, ch.length === 5 && ch.every((c, i) => c.includes(`href="${root}/guide.html#${HOWTO[i]}"`)));
+    for (const sec of ['ask', 'family', 'privacy', 'pro']) check(`${home} #${sec}: links the guide's #${sec}`, between(h, new RegExp(`<section[^>]*id="${sec}"[\\s\\S]*?</section>`)).includes(`href="${root}/guide.html#${sec}"`));
+    check(`${home} #get: "New to Bloom?" links #start`, between(h, /<section[^>]*id="get"[\s\S]*?<\/section>/).includes(`href="${root}/guide.html#start"`));
+    const sup = pageText(l === 'en' ? 'support.html' : `${l}/support.html`);
+    check(`${l} support: Write to us links the guide`, between(sup, /<section[^>]*id="write"[\s\S]*?<\/section>/).includes(`href="${root}/guide.html"`));
+    for (const [q, x] of [['export', 'privacy'], ['invite', 'family'], ['pro', 'pro']]) {
+      const ans = between(sup, new RegExp(`<summary>${B.words(l)[`faq.${q}.q`].replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}</summary>[\\s\\S]*?</details>`));
+      check(`${l} support FAQ "${q}": links the guide's #${x}`, ans.includes(`href="${root}/guide.html#${x}"`));
+    }
+    for (const f of B.pagesFor(l)) {
+      const foot = between(pageText(f), /<footer class="site-foot"[\s\S]*?<\/footer>/);
+      const hrefs = [...foot.matchAll(/<a href="([^"]+)">/g)].map(m => m[1]);
+      const i = hrefs.indexOf(`${root}/support.html`);
+      check(`${f}: the footer links the guide right after Support`, i >= 0 && hrefs[i + 1] === `${root}/guide.html`, hrefs.join(' '));
+    }
+  }
+  const nf = between(pageText('404.html'), /<footer class="site-foot"[\s\S]*?<\/footer>/);
+  check('404.html: the footer links the guide', nf.includes('href="/guide.html"'));
+  // the English pages: what 6fdd640 served, plus only the allowed additions
+  const { spawnSync } = require('node:child_process');
+  const allowed = html => html.replace(/\n\s*<a class="howto" href="[^"]*">[^<]*<\/a>/g, '')
+    .replace(/\n\s*<p class="get-new">[\s\S]*?<\/p>/g, '').replace(/\n\s*<p class="fine guide-line">[\s\S]*?<\/p>/g, '').replace(/ <a class="faq-guide" href="[^"]*">[^<]*<\/a>/g, '')
+    .replace(/ · <a href="\/guide\.html">[^<]*<\/a>/g, '').replace(/<meta name="apple-itunes-app" content="[^"]*">\n/g, '').replace(/<script type="application\/ld\+json">[\s\S]*?<\/script>\n/g, '');
+  for (const f of ['index.html', 'support.html', 'privacy.html', 'terms.html', '404.html']) {
+    const old = spawnSync('git', ['show', `${process.env.SITE_BASE || '6fdd640'}:${f}`], { cwd: ROOT, encoding: 'utf8' });   // SITE_BASE: the same files under another commit id (a scratch copy)
+    if (old.status !== 0) { console.log(`  SKIP ${f} against 6fdd640 (no git history here)`); continue; }
+    const a = old.stdout, b = allowed(read(f));
+    let i = 0; while (i < a.length && a[i] === b[i]) i++;
+    check(`${f}: 6fdd640's page plus only the guide's additions`, a === b, `differs at ${i}: ${JSON.stringify(a.slice(i, i + 80))} vs ${JSON.stringify(b.slice(i, i + 80))}`);
+  }
+});
+
+// ── §15 (the way in, in a browser) a "How it works" link lands on her section, at the top of her screen
+SECTIONS.push(async () => {
+  if (!browserSection(15, 'the guide — a link lands on its section')) return;
+  for (const [from, sel, want] of [['/th/index.html', 'article.chapter:nth-of-type(2) a.howto', '/th/guide.html#trying'], ['/index.html', '#privacy a.howto', '/guide.html#privacy'], ['/cs/support.html', '#write a[href$="guide.html"]', '/cs/guide.html']]) {
+    await withPage(from, {}, async p => {
+      await Promise.all([p.waitForEvent('framenavigated'), p.click(sel)]);
+      await p.waitForLoadState('load');
+      // the site scrolls smoothly: wait until it has come to rest
+      for (let last = -1, i = 0; i < 30; i++) { await p.waitForTimeout(150); const y = await p.evaluate(() => scrollY); if (y === last) break; last = y; }
+      const u = new URL(p.url());
+      check(`${from}: ${sel} → ${want}`, u.pathname + u.hash === want, u.pathname + u.hash);
+      if (u.hash) { const top = await p.evaluate(h => document.querySelector(h + ' h2').getBoundingClientRect().top, u.hash); check(`${want}: its heading is at the top of the screen`, top >= 0 && top <= 60, String(top)); }
+    });
+  }
+});
+
+// ── §16 robots.txt, sitemap.xml, Safari's app banner, the search-result details (JSON-LD)
+SECTIONS.push(async () => {
+  if (!section(16, 'robots, sitemap, app banner, JSON-LD')) return;
+  const B = require(path.join(ROOT, 'build.js'));
+  check('robots.txt', exists('robots.txt') && read('robots.txt') === 'User-agent: *\nAllow: /\n\nSitemap: https://bloomdays.family/sitemap.xml\n', exists('robots.txt') ? JSON.stringify(read('robots.txt')) : 'missing');
+  const sm = exists('sitemap.xml') ? read('sitemap.xml') : '';
+  check('sitemap.xml exists', !!sm);
+  check('sitemap.xml: the sitemap and xhtml namespaces', sm.startsWith('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">') && sm.trimEnd().endsWith('</urlset>'));
+  const urls = [...sm.matchAll(/<url>([\s\S]*?)<\/url>/g)].map(m => ({ loc: (m[1].match(/<loc>([^<]+)<\/loc>/) || [])[1], alts: [...m[1].matchAll(/<xhtml:link rel="alternate" hreflang="([^"]+)" href="([^"]+)"\/>/g)].map(a => a[1] + '=' + a[2]) }));
+  const pages = B.LANGS.flatMap(l => B.pagesFor(l)).filter(f => !f.endsWith('404.html'));
+  check('sitemap.xml: 21 addresses, one per page but 404', urls.length === 21 && pages.length === 21, `${urls.length} / ${pages.length}`);
+  check('sitemap.xml: no 404', !/404/.test(sm));
+  for (const f of pages) {
+    const h = read(f), canon = (h.match(/<link rel="canonical" href="([^"]+)">/) || [])[1];
+    const u = urls.find(x => x.loc === canon);
+    check(`sitemap.xml lists ${f} at its canonical ${canon}`, !!u);
+    const own = [...h.matchAll(/<link rel="alternate" hreflang="([^"]+)" href="([^"]+)">/g)].map(m => m[1] + '=' + m[2]);
+    if (u) check(`sitemap.xml: ${f}'s alternates = its head's`, JSON.stringify(u.alts) === JSON.stringify(own), u.alts.join(' ') + ' vs ' + own.join(' '));
+  }
+  const { spawnSync } = require('node:child_process'), os = require('node:os');
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'bloom-sm-'));
+  try {
+    fs.cpSync(ROOT, tmp, { recursive: true, filter: x => !/[\\/](\.git|\.superpowers|node_modules)([\\/]|$)/.test(x) });
+    fs.writeFileSync(path.join(tmp, 'sitemap.xml'), sm.replace('</urlset>', '<url><loc>https://bloomdays.family/x.html</loc></url>\n</urlset>'));
+    const r = spawnSync(process.execPath, ['build.js', '--check'], { cwd: tmp, encoding: 'utf8' });
+    check('a hand edit of sitemap.xml fails build.js --check', r.status === 1 && r.stdout.includes('sitemap.xml differs'), r.stdout.trim());
+  } finally { fs.rmSync(tmp, { recursive: true, force: true }); }
+  for (const f of B.LANGS.flatMap(l => B.pagesFor(l))) check(`${f}: Safari's app banner`, read(f).includes('<meta name="apple-itunes-app" content="app-id=6833483759">'));
+  for (const l of B.LANGS) for (const f of B.pagesFor(l)) {
+    const blocks = [...read(f).matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)].map(m => m[1]);
+    const home = f.endsWith('index.html');
+    check(`${f}: ${home ? 'one JSON-LD block' : 'no JSON-LD'}`, blocks.length === (home ? 1 : 0), String(blocks.length));
+    if (!home || blocks.length !== 1) continue;
+    let j = null; try { j = JSON.parse(blocks[0]); } catch (e) { /* below */ }
+    check(`${f}: the JSON-LD parses`, !!j);
+    if (!j) continue;
+    const want = { '@context': 'https://schema.org', '@type': 'MobileApplication', name: 'Bloom', operatingSystem: 'iOS, Android', applicationCategory: 'HealthApplication',
+      inLanguage: B.HTML_LANG[l], description: B.words(l)['page.index.desc'], url: (read(f).match(/<link rel="canonical" href="([^"]+)">/) || [])[1],
+      downloadUrl: ['https://apps.apple.com/app/id6833483759', 'https://play.google.com/store/apps/details?id=family.bloomdays'], offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' } };
+    check(`${f}: the JSON-LD is exactly the app's details`, JSON.stringify(j) === JSON.stringify(want), JSON.stringify(j));
+    check(`${f}: the JSON-LD names both platforms, never one`, /^iOS, Android$/.test(j.operatingSystem));
+    check(`${f}: no rating, no review`, !/aggregateRating|review|ratingValue/i.test(blocks[0]));
+  }
+});
+
+// ── §15 (on a phone) a chapter card's "How it works" sits under its words, not under the picture
+SECTIONS.push(async () => {
+  if (!browserSection(15, 'the guide — the links on a phone')) return;
+  for (const w of [320, 390, 412, 800, 1280]) await withPage('/cs/index.html', { width: w }, async p => {
+    const bad = await p.evaluate(() => [...document.querySelectorAll('article.chapter')].filter(c => { const a = c.querySelector('a.howto').getBoundingClientRect(), t = c.querySelector('p').getBoundingClientRect(); return Math.abs(a.left - t.left) > 2 || a.top < t.bottom - 1; }).length);
+    check(`/cs/index.html @${w}: each chapter card's link under its words`, bad === 0, `${bad} card(s)`);
+  });
+});
+
+// ── §15 (JavaScript off) the guide reads whole without its script: every section, the contents list, the switch
+SECTIONS.push(async () => {
+  if (!browserSection(15, 'the guide with JavaScript off')) return;
+  const B = require(path.join(ROOT, 'build.js'));
+  for (const l of B.LANGS) {
+    const f = l === 'en' ? '/guide.html' : `/${l}/guide.html`;
+    await withPage(f + '#family', { js: false, width: 320 }, async p => {
+      check(`${f} JS off: the ten sections are visible`, (await p.locator('section.guide-sec h2').evaluateAll(hs => hs.filter(h => h.getBoundingClientRect().height > 0).length)) === 10);
+      check(`${f} JS off: the contents list is ten links`, (await p.locator('nav.toc a').count()) === 10);
+      for (let last = -1, i = 0; i < 30; i++) { await p.waitForTimeout(150); const y = await p.evaluate(() => scrollY); if (y === last) break; last = y; }   // smooth scrolling comes to rest
+      const top = await p.evaluate(() => document.querySelector('#family').getBoundingClientRect().top);
+      check(`${f} JS off: the page opens at #family`, Math.abs(top) < 60, String(top));
+      check(`${f} JS off: no Menu button, the links show`, !(await p.locator('.nav-toggle').isVisible()) && await p.locator('#site-nav a').first().isVisible());
+      const sw = await p.locator('.lang-switch a').evaluateAll(a => a.map(x => x.getAttribute('href')));
+      check(`${f} JS off: the switch goes to the five guides`, JSON.stringify(sw) === JSON.stringify(B.LANGS.map(x => x === 'en' ? '/guide.html' : `/${x}/guide.html`)), sw.join(' '));
     });
   }
 });

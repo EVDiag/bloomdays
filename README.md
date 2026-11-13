@@ -29,3 +29,17 @@ Their rules, as read that day:
 `tools/site/contact-worker/`), which sends each message through Resend to the support inbox. When the site moves to
 Cloudflare (`claude/bloom-website-move.md`), `ENDPOINT` becomes `/api/contact` and that Worker is deleted.
 `const SEND = false;` turns sending off: the page then offers the copy-and-email box instead.
+
+## The guide (`guide.html`, `xx/guide.html`)
+
+How the app works, section by section, in five languages: its words are the `guide.*` keys in `src/i18n/*.json`, and every
+place in the app it names is an app word (`{{app:…}}` from `src/app-words.json`). Before a guide step names a place, the place is
+walked in the app: `node tools/site/guide-walk.js --app www --all` in Bloom-app (Playwright), then
+`node tools/site/guide-walk.js --check ../bloomdays`. Its pictures come from `node tools/site/screens.js --lang <xx> --only …`.
+After an app build renames a menu: `node build.js --app ../Bloom-app/www/i18n`, the walk, `node build.js`, `node verify-site.js`.
+
+## For search engines
+
+`robots.txt` (allow all, names the sitemap) is a plain file; `sitemap.xml` is written by `build.js` (every page but 404, with its
+language alternates). Every page carries Safari's app banner (`apple-itunes-app`, Bloom's Apple ID); each Home carries one
+JSON-LD block (`MobileApplication`: free, both stores, no ratings).

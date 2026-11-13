@@ -157,6 +157,7 @@ main { display: block; }
   .chapter { display: grid; grid-template-columns: 92px 1fr; column-gap: 14px; align-items: start; padding: 16px; }
   .chapter .ch-art { grid-row: 1 / span 2; width: 92px; margin: 0; }
   .chapter .ch-logo { display: none; }
+  .chapter .howto { grid-column: 2; }
 }
 .chapter .ch-art { width: 100%; max-width: 220px; margin: 0 auto 8px; }
 .ch-head { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
@@ -272,3 +273,28 @@ html:lang(th), html:lang(zh-Hans) { line-break: auto; word-break: normal; }
 .summary section { margin-bottom: 1.6em; }
 /* a two-character Chinese footer link is narrower than a finger: the target is at least 44 px wide */
 .site-foot a { min-width: 44px; text-align: center; }
+
+/* the guide (guide.html) */
+.toc ol { list-style: none; padding: 0; margin: 1.2em 0 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.toc a { display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border-radius: 999px; background: var(--paper); border: 1px solid var(--line-strong); color: var(--ink); text-decoration: none; font-weight: 500; }
+.toc a:hover, .toc a:focus-visible { border-color: var(--terracotta); color: var(--terracotta-deep); }
+.guide-sec { padding: 44px 0; scroll-margin-top: 12px; }
+.guide-sec:nth-of-type(odd) { background: var(--paper-warm); }
+.guide-split { display: grid; grid-template-columns: 1.2fr .8fr; gap: 32px; align-items: start; }
+.guide-text h2 { margin-top: 0; }
+.g-lbl { font-family: var(--font-body); font-size: 14px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--sage-ink); margin: 1.4em 0 .35em; }
+.path { font-weight: 600; margin: 0; }
+.path span { overflow-wrap: anywhere; }
+.path .arr { color: var(--terracotta-deep); margin: 0 .15em; }
+.steps { padding-left: 1.4em; margin: 0; }
+.steps li { margin-bottom: .55em; padding-left: .2em; }
+.steps em, .path em { font-style: normal; font-weight: 600; }
+.good { margin-top: 1.4em; padding: 4px 18px 14px; border-left: 3px solid var(--terracotta); background: var(--paper); border-radius: 0 14px 14px 0; }
+.good .g-lbl { margin-top: .9em; color: var(--terracotta-deep); }
+.good p { margin: 0; }
+.guide-sec .phone { max-width: 250px; }
+@media (max-width: 760px) { .guide-split { grid-template-columns: 1fr; } .guide-sec .phone { max-width: 230px; } }
+.howto { display: inline-flex; align-items: center; min-height: 44px; font-weight: 600; color: var(--terracotta-deep); text-decoration: none; }
+.howto:hover, .howto:focus-visible { text-decoration: underline; }
+.chapter .howto { margin-top: auto; }
+.get-new { font-weight: 500; }

@@ -17,10 +17,12 @@ const SWITCH_TEXT = { en: 'EN', cs: 'CS', ru: 'RU', th: 'TH', zh: '中文' };
 const SITE = 'https://bloomdays.family';
 // the store listings (the App Store one answers once Apple approves Bloom; js/site.js holds the same two)
 const STORE = { appStore: 'https://apps.apple.com/app/id6833483759', googlePlay: 'https://play.google.com/store/apps/details?id=family.bloomdays' };
-const EN_PAGES = ['index.html', 'support.html', 'privacy.html', 'terms.html', '404.html'];
-const XX_PAGES = ['index.html', 'support.html', 'privacy.html'];
+const EN_PAGES = ['index.html', 'support.html', 'privacy.html', 'terms.html', '404.html', 'guide.html'];
+const XX_PAGES = ['index.html', 'support.html', 'privacy.html', 'guide.html'];
+// the languages the guide is written in
+const GUIDE_LANGS = LANGS;
 // which languages have each page (the switch and hreflang follow this): the English policy and the summaries are different pages
-const SIBLINGS = { 'index.html': LANGS, 'support.html': LANGS };
+const SIBLINGS = { 'index.html': LANGS, 'support.html': LANGS, 'guide.html': GUIDE_LANGS };
 const NAV = [['/index.html#chapters', 'nav.chapters', null], ['/index.html#ask', 'nav.ask', null], ['/index.html#family', 'nav.family', null],
   ['/privacy.html', 'nav.privacy', 'privacy.html'], ['/support.html', 'nav.support', 'support.html']];
 const SCRIPTS = { 'support.html': '<script type="module" src="/js/support.js"></script>\n' };
@@ -38,7 +40,7 @@ const has = (lang, k) => typeof words(lang)[k] === 'string' && words(lang)[k].tr
 const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const rootOf = lang => (lang === 'en' ? '' : '/' + lang);
 const outPath = (lang, page) => (lang === 'en' ? page : `${lang}/${page}`);
-function pagesFor(lang) { return (lang === 'en' ? EN_PAGES : XX_PAGES).map(p => outPath(lang, p)); }
+function pagesFor(lang) { return (lang === 'en' ? EN_PAGES : XX_PAGES).filter(p => p !== 'guide.html' || GUIDE_LANGS.includes(lang)).map(p => outPath(lang, p)); }
 function split(file) { const m = file.match(/^(cs|ru|th|zh)\/(.+)$/); return m ? [m[1], m[2]] : ['en', file]; }
 function templateOf(lang, page) { return lang !== 'en' && page === 'privacy.html' ? 'summary.html' : page; }
 const readTemplate = name => fs.readFileSync(path.join(SRC, 'pages', name), 'utf8');
@@ -106,16 +108,24 @@ function switchFor(lang, page) {
   return `\n  <nav class="lang-switch" aria-label="${esc(text(lang, 'frame.langLabel'))}">${a.join('<span aria-hidden="true"> · </span>')}</nav>`;
 }
 
+// a page's address on the site (Home is the folder)
+const urlOf = (lang, page) => `${SITE}/${page === 'index.html' ? (lang === 'en' ? '' : lang + '/') : outPath(lang, page)}`;
+// the alternates of a page, as its head lists them (and sitemap.xml): the summaries point to each other only (the English policy
+// is another page); Home, Support and the guide to every language + x-default; the English policy, the terms and 404 to none
+function alternatesOf(lang, page) {
+  if (page === 'privacy.html') return lang === 'en' ? [] : LANGS.filter(l => l !== 'en').map(l => ({ hreflang: HTML_LANG[l], href: `${SITE}/${outPath(l, page)}` }));
+  const sib = SIBLINGS[page];
+  if (!sib) return [];
+  return [...sib.map(l => ({ hreflang: HTML_LANG[l], href: urlOf(l, page) })), { hreflang: 'x-default', href: urlOf('en', page) }];
+}
+
 function render(lang, file) {
   const [l2, page] = file.includes('/') ? split(file) : [lang, file];
   if (l2 !== lang) throw new Error(`${file} is not a ${lang} page`);
   const key = page.replace('.html', '');
   const url = `${SITE}/${page === 'index.html' ? (lang === 'en' ? '' : lang + '/') : outPath(lang, page)}`;
   const is404 = page === '404.html';
-  // the summaries point to each other only (the English policy is another page); Home and Support to all five + x-default
-  const sib = SIBLINGS[page] || (page === 'privacy.html' && lang !== 'en' ? LANGS.filter(l => l !== 'en') : null);
-  const alternates = page === 'privacy.html' && sib ? sib.map(l => `<link rel="alternate" hreflang="${HTML_LANG[l]}" href="${SITE}/${outPath(l, page)}">\n`).join('') : sib ? sib.map(l => `<link rel="alternate" hreflang="${HTML_LANG[l]}" href="${SITE}/${page === 'index.html' ? (l === 'en' ? '' : l + '/') : outPath(l, page)}">\n`).join('')
-    + `<link rel="alternate" hreflang="x-default" href="${SITE}/${page === 'index.html' ? '' : page}">\n` : '';
+  const alternates = alternatesOf(lang, page).map(a => `<link rel="alternate" hreflang="${a.hreflang}" href="${a.href}">\n`).join('');
   const ctx = { path: '/' + file };
   ctx['@title'] = text(lang, `page.${key}.title`, ctx);
   ctx['@desc'] = text(lang, `page.${key}.desc`, ctx);
@@ -132,8 +142,29 @@ function render(lang, file) {
   ctx['@googlePlay'] = STORE.googlePlay;
   ctx['@shots'] = lang === 'en' ? '/img/screens' : `/img/screens/${lang}`;
   ctx['@i18n404'] = is404 ? i18n404() : '';
+  ctx['@jsonld'] = page === 'index.html' ? jsonld(lang, url) : '';
   ctx['@body'] = expand(readTemplate(templateOf(lang, page)).replace(/\n+$/, ''), lang, ctx);
   return expand(readTemplate('frame.html'), lang, ctx);
+}
+
+// the search engines' details of the app, on each Home: free (price 0), both stores, no ratings and no reviews (none exist), nothing of Pro
+function jsonld(lang, url) {
+  const o = { '@context': 'https://schema.org', '@type': 'MobileApplication', name: 'Bloom', operatingSystem: 'iOS, Android', applicationCategory: 'HealthApplication',
+    inLanguage: HTML_LANG[lang], description: text(lang, 'page.index.desc'), url, downloadUrl: [STORE.appStore, STORE.googlePlay],
+    offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' } };
+  return `<script type="application/ld+json">${JSON.stringify(o).replace(/</g, '\\u003c')}</script>\n`;
+}
+
+// sitemap.xml: every page of every language but 404.html, at its canonical address, with the alternates its head lists
+function sitemap() {
+  const x = s => s.replace(/&/g, '&amp;');
+  const rows = [];
+  for (const lang of LANGS) for (const f of pagesFor(lang)) {
+    const [, page] = split(f);
+    if (page === '404.html') continue;
+    rows.push(`<url><loc>${x(urlOf(lang, page))}</loc>${alternatesOf(lang, page).map(a => `<xhtml:link rel="alternate" hreflang="${a.hreflang}" href="${x(a.href)}"/>`).join('')}</url>`);
+  }
+  return '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">\n' + rows.join('\n') + '\n</urlset>\n';
 }
 
 // the not-found and invite words of every language, for js/site.js to choose from on the phone
@@ -147,12 +178,14 @@ function i18n404() {
 function all() {
   const out = [];
   for (const lang of LANGS) for (const f of pagesFor(lang)) out.push([f, render(lang, f)]);   // every language must have its words
+  out.push(['sitemap.xml', sitemap()]);
   return out;
 }
 
 // the app's own words: the site's wording rules — no "(JSON)" after Export, sentence case for a word the app shows in capitals, a setting without its state
 function siteForm(v, key) {
   v = String(v).replace(/\s*[（(]JSON[）)]/, '');
+  v = v.replace(/\s*·\s*[^·]*\$\s?\d[^·]*$/, '');   // no price: "Upgrade to Pro · $3 lifetime" → "Upgrade to Pro" (the store shows hers)
   if (/\.row\.off$/.test(key || '')) v = v.replace(/\s*[:：][^:：]*$/, '');   // a setting's name without its state (": off")
   if (v === v.toUpperCase() && v !== v.toLowerCase()) v = v.charAt(0) + v.slice(1).toLowerCase();
   return v;
@@ -171,7 +204,7 @@ function refreshApp(dir) {
   console.log(`src/app-words.json: ${Object.keys(next).length} words from ${dir}`);
 }
 
-module.exports = { LANGS, HTML_LANG, OG_LOCALE, pagesFor, render, keysUsed, expand, has, hasLang, words, appWords, siteForm, all };
+module.exports = { LANGS, HTML_LANG, OG_LOCALE, GUIDE_LANGS, SITE, pagesFor, render, keysUsed, alternatesOf, urlOf, expand, has, hasLang, words, appWords, siteForm, all };
 
 if (require.main === module) {
   const args = process.argv.slice(2);

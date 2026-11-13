@@ -103,5 +103,418 @@
     "ru": "Резервная копия памяти Bloom",
     "th": "สำรองความทรงจำของ Bloom",
     "zh": "备份 Bloom 的记忆"
+  },
+  "onb.welcome.begin": {
+    "en": "Begin",
+    "cs": "Začít",
+    "ru": "Начать",
+    "th": "เริ่มต้น",
+    "zh": "开始"
+  },
+  "nav.today": {
+    "en": "Today",
+    "cs": "Dnes",
+    "ru": "Сегодня",
+    "th": "วันนี้",
+    "zh": "今天"
+  },
+  "nav.journey": {
+    "en": "Journey",
+    "cs": "Cesta",
+    "ru": "Путь",
+    "th": "เส้นทาง",
+    "zh": "旅程"
+  },
+  "nav.plus": {
+    "en": "Log something",
+    "cs": "Něco zapsat",
+    "ru": "Записать",
+    "th": "บันทึกบางอย่าง",
+    "zh": "记录一下"
+  },
+  "orb.label": {
+    "en": "Ask Bloom",
+    "cs": "Zeptat se Bloom",
+    "ru": "Спросить Bloom",
+    "th": "ถาม Bloom",
+    "zh": "问问 Bloom"
+  },
+  "me.chapter.row": {
+    "en": "Your chapter",
+    "cs": "Tvoje kapitola",
+    "ru": "Твоя глава",
+    "th": "บทของคุณ",
+    "zh": "你的阶段"
+  },
+  "menu.language": {
+    "en": "Language",
+    "cs": "Jazyk",
+    "ru": "Язык",
+    "th": "ภาษา",
+    "zh": "语言"
+  },
+  "menu.notifications": {
+    "en": "Notifications",
+    "cs": "Oznámení",
+    "ru": "Уведомления",
+    "th": "การแจ้งเตือน",
+    "zh": "通知"
+  },
+  "menu.pause": {
+    "en": "I need a pause",
+    "cs": "Potřebuji pauzu",
+    "ru": "Мне нужна пауза",
+    "th": "ฉันขอพักก่อน",
+    "zh": "我需要暂停一下"
+  },
+  "pause.cta": {
+    "en": "Pause everything",
+    "cs": "Pozastavit vše",
+    "ru": "Поставить всё на паузу",
+    "th": "พักทั้งหมด",
+    "zh": "暂停一切"
+  },
+  "cyc.log.start": {
+    "en": "Period started",
+    "cs": "Menstruace začala",
+    "ru": "Менструация началась",
+    "th": "ประจำเดือนเริ่มแล้ว",
+    "zh": "经期开始"
+  },
+  "plus.symptoms": {
+    "en": "Symptoms",
+    "cs": "Příznaky",
+    "ru": "Симптомы",
+    "th": "อาการ",
+    "zh": "症状"
+  },
+  "log.tile.mood": {
+    "en": "Mood",
+    "cs": "Nálada",
+    "ru": "Настрой",
+    "th": "อารมณ์",
+    "zh": "心情"
+  },
+  "cyc.phase.fertile": {
+    "en": "Fertile window",
+    "cs": "Plodné okno",
+    "ru": "Фертильное окно",
+    "th": "ช่วงเจริญพันธุ์",
+    "zh": "易孕期"
+  },
+  "journey.month.hint": {
+    "en": "Tap a day to see it, log it, or add an appointment.",
+    "cs": "Klepni na den: uvidíš ho, můžeš do něj zapisovat nebo přidat termín.",
+    "ru": "Нажми на день, чтобы посмотреть его, сделать запись или добавить приём.",
+    "th": "แตะวันใดก็ได้เพื่อดู บันทึก หรือเพิ่มนัดหมาย",
+    "zh": "点任意一天：查看、补记，或添加预约。"
+  },
+  "plus.appt": {
+    "en": "Appointment",
+    "cs": "Termín",
+    "ru": "Приём",
+    "th": "นัดหมาย",
+    "zh": "预约"
+  },
+  "plus.bbt": {
+    "en": "Temperature",
+    "cs": "Teplota",
+    "ru": "Температура",
+    "th": "อุณหภูมิ",
+    "zh": "基础体温"
+  },
+  "plus.opk": {
+    "en": "Ovulation test",
+    "cs": "Ovulační test",
+    "ru": "Тест на овуляцию",
+    "th": "ตรวจไข่ตก",
+    "zh": "排卵试纸"
+  },
+  "plus.fluid": {
+    "en": "Fluid",
+    "cs": "Hlen",
+    "ru": "Выделения",
+    "th": "มูก",
+    "zh": "分泌物"
+  },
+  "plus.sex": {
+    "en": "Sex",
+    "cs": "Sex",
+    "ru": "Секс",
+    "th": "เซ็กซ์",
+    "zh": "性生活"
+  },
+  "plus.ptest": {
+    "en": "Pregnancy test",
+    "cs": "Těhotenský test",
+    "ru": "Тест на беременность",
+    "th": "ตรวจครรภ์",
+    "zh": "验孕"
+  },
+  "now.kicks.none": {
+    "en": "count kicks",
+    "cs": "počítat kopání",
+    "ru": "посчитать толчки",
+    "th": "นับการดิ้น",
+    "zh": "数胎动"
+  },
+  "home.tools.kicks": {
+    "en": "Kick counter",
+    "cs": "Počítadlo kopánků",
+    "ru": "Счётчик шевелений",
+    "th": "นับลูกดิ้น",
+    "zh": "胎动计数"
+  },
+  "home.tools.contractions": {
+    "en": "Contraction timer",
+    "cs": "Měřič kontrakcí",
+    "ru": "Таймер схваток",
+    "th": "จับเวลามดลูกหดตัว",
+    "zh": "宫缩计时"
+  },
+  "me.born": {
+    "en": "My baby is here",
+    "cs": "Miminko je na světě",
+    "ru": "Малыш родился",
+    "th": "ลูกน้อยคลอดแล้ว",
+    "zh": "宝宝出生了"
+  },
+  "n3.feed": {
+    "en": "Feed",
+    "cs": "Krmení",
+    "ru": "Кормление",
+    "th": "ให้นม",
+    "zh": "喂奶"
+  },
+  "nb.feed.left": {
+    "en": "Left",
+    "cs": "Levé",
+    "ru": "Левая",
+    "th": "ซ้าย",
+    "zh": "左侧"
+  },
+  "nb.feed.right": {
+    "en": "Right",
+    "cs": "Pravé",
+    "ru": "Правая",
+    "th": "ขวา",
+    "zh": "右侧"
+  },
+  "nb.feed.bottle": {
+    "en": "Bottle",
+    "cs": "Lahvička",
+    "ru": "Бутылочка",
+    "th": "ขวดนม",
+    "zh": "奶瓶"
+  },
+  "n3.sleep": {
+    "en": "Sleep",
+    "cs": "Spánek",
+    "ru": "Сон",
+    "th": "นอน",
+    "zh": "睡觉"
+  },
+  "n3.wake": {
+    "en": "Woke up",
+    "cs": "Už nespí",
+    "ru": "Уже не спит",
+    "th": "ตื่นแล้ว",
+    "zh": "醒了"
+  },
+  "n3.diaper": {
+    "en": "Diaper",
+    "cs": "Plenka",
+    "ru": "Подгузник",
+    "th": "ผ้าอ้อม",
+    "zh": "尿布"
+  },
+  "nb.diaper.wet": {
+    "en": "Wet",
+    "cs": "Mokrá",
+    "ru": "Мокрый",
+    "th": "เปียก",
+    "zh": "尿湿"
+  },
+  "nb.diaper.dirty": {
+    "en": "Dirty",
+    "cs": "Pokakaná",
+    "ru": "Грязный",
+    "th": "อึ",
+    "zh": "便便"
+  },
+  "nb.tile.pump": {
+    "en": "Pump",
+    "cs": "Odsávání",
+    "ru": "Сцеживание",
+    "th": "ปั๊มนม",
+    "zh": "吸奶"
+  },
+  "be.both": {
+    "en": "Both",
+    "cs": "Obě",
+    "ru": "Обе",
+    "th": "ทั้งสองข้าง",
+    "zh": "两侧"
+  },
+  "milk.title": {
+    "en": "Your milk",
+    "cs": "Tvoje mléko",
+    "ru": "Твоё молоко",
+    "th": "น้ำนมของคุณ",
+    "zh": "你的母乳"
+  },
+  "milk.fridge": {
+    "en": "Fridge",
+    "cs": "Lednice",
+    "ru": "Холодильник",
+    "th": "ตู้เย็น",
+    "zh": "冷藏"
+  },
+  "milk.freezer": {
+    "en": "Freezer",
+    "cs": "Mrazák",
+    "ru": "Морозилка",
+    "th": "ช่องแช่แข็ง",
+    "zh": "冷冻"
+  },
+  "me.night": {
+    "en": "Night mode",
+    "cs": "Noční režim",
+    "ru": "Ночной режим",
+    "th": "โหมดกลางคืน",
+    "zh": "夜间模式"
+  },
+  "peri.tile.flashes": {
+    "en": "Flushes",
+    "cs": "Návaly",
+    "ru": "Приливы",
+    "th": "ร้อนวูบวาบ",
+    "zh": "潮热"
+  },
+  "menu.summary": {
+    "en": "Health summary",
+    "cs": "Zdravotní přehled",
+    "ru": "Сводка о здоровье",
+    "th": "สรุปสุขภาพ",
+    "zh": "健康摘要"
+  },
+  "ask.send": {
+    "en": "Send",
+    "cs": "Odeslat",
+    "ru": "Отправить",
+    "th": "ส่ง",
+    "zh": "发送"
+  },
+  "call.cta": {
+    "en": "Call Bloom",
+    "cs": "Zavolat Bloom",
+    "ru": "Позвонить Bloom",
+    "th": "โทรหา Bloom",
+    "zh": "给 Bloom 打电话"
+  },
+  "call.end": {
+    "en": "End call",
+    "cs": "Ukončit hovor",
+    "ru": "Завершить",
+    "th": "วางสาย",
+    "zh": "结束通话"
+  },
+  "voice.read": {
+    "en": "Read aloud",
+    "cs": "Číst nahlas",
+    "ru": "Читать вслух",
+    "th": "อ่านออกเสียง",
+    "zh": "朗读"
+  },
+  "menu.partner": {
+    "en": "Share an update",
+    "cs": "Sdílet novinku",
+    "ru": "Поделиться новостью",
+    "th": "แบ่งปันข่าวคราว",
+    "zh": "分享近况"
+  },
+  "us.pool.open": {
+    "en": "Open the pool",
+    "cs": "Otevřít sázky",
+    "ru": "Открыть тотализатор",
+    "th": "เปิดดูคำทาย",
+    "zh": "打开猜猜看"
+  },
+  "us.book.title": {
+    "en": "Your book so far",
+    "cs": "Tvoje kniha zatím",
+    "ru": "Твоя книга на сегодня",
+    "th": "หนังสือของคุณจนถึงตอนนี้",
+    "zh": "你的书，写到现在"
+  },
+  "invite.share": {
+    "en": "Share your code",
+    "cs": "Sdílet můj kód",
+    "ru": "Поделиться кодом",
+    "th": "แชร์โค้ดของฉัน",
+    "zh": "分享我的邀请码"
+  },
+  "invite.redeem": {
+    "en": "Redeem",
+    "cs": "Uplatnit",
+    "ru": "Применить",
+    "th": "ใช้โค้ด",
+    "zh": "兑换"
+  },
+  "membk.yes": {
+    "en": "Yes, keep my memory safe",
+    "cs": "Ano, uchovat mou paměť",
+    "ru": "Да, сохранить мою память",
+    "th": "ตกลง เก็บความทรงจำของฉันไว้",
+    "zh": "好，保管我的记忆"
+  },
+  "lock.row.off": {
+    "en": "App lock",
+    "cs": "Zámek aplikace",
+    "ru": "Блокировка приложения",
+    "th": "ล็อกแอป",
+    "zh": "应用锁"
+  },
+  "menu.pro": {
+    "en": "Upgrade to Pro",
+    "cs": "Upgrade na Pro",
+    "ru": "Перейти на Pro",
+    "th": "อัปเกรดเป็น Pro",
+    "zh": "升级Pro"
+  },
+  "pro.locked.cta": {
+    "en": "Unlock with Pro",
+    "cs": "Odemknout s Pro",
+    "ru": "Открыть с Pro",
+    "th": "ปลดล็อกด้วย Pro",
+    "zh": "解锁Pro"
+  },
+  "pro.locked.title": {
+    "en": "A Pro tool",
+    "cs": "Nástroj Bloom Pro",
+    "ru": "Инструмент Pro",
+    "th": "เครื่องมือสำหรับ Pro",
+    "zh": "Pro专属工具"
+  },
+  "nb.diaper.both": {
+    "en": "Both",
+    "cs": "Obojí",
+    "ru": "И то, и то",
+    "th": "ทั้งคู่",
+    "zh": "都有"
+  },
+  "us.pool.first": {
+    "en": "Add the first guess",
+    "cs": "Přidat první tip",
+    "ru": "Добавить первую догадку",
+    "th": "เพิ่มคำทายแรก",
+    "zh": "添加第一个猜测"
+  },
+  "us.pool.share": {
+    "en": "Share the pool",
+    "cs": "Sdílet sázky",
+    "ru": "Поделиться тотализатором",
+    "th": "แชร์การทาย",
+    "zh": "分享猜猜看"
   }
 }
