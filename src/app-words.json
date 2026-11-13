@@ -1,0 +1,107 @@
+{
+  "nav.me": {
+    "en": "Me",
+    "cs": "Já",
+    "ru": "Я",
+    "th": "ฉัน",
+    "zh": "我"
+  },
+  "nav.us": {
+    "en": "Us",
+    "cs": "My",
+    "ru": "Мы",
+    "th": "พวกเรา",
+    "zh": "我们"
+  },
+  "menu.privacy": {
+    "en": "Privacy & data",
+    "cs": "Soukromí a data",
+    "ru": "Приватность и данные",
+    "th": "ความเป็นส่วนตัวและข้อมูล",
+    "zh": "隐私与数据"
+  },
+  "privacy.export": {
+    "en": "Export my data",
+    "cs": "Exportovat moje data",
+    "ru": "Экспортировать мои данные",
+    "th": "ส่งออกข้อมูลของฉัน",
+    "zh": "导出我的数据"
+  },
+  "privacy.delete": {
+    "en": "Delete all my data",
+    "cs": "Smazat všechna moje data",
+    "ru": "Удалить все мои данные",
+    "th": "ลบข้อมูลทั้งหมดของฉัน",
+    "zh": "删除我的全部数据"
+  },
+  "privacy.aiforget": {
+    "en": "Forget everything Bloom has learned",
+    "cs": "Zapomenout vše, co se Bloom naučila",
+    "ru": "Забыть всё, что узнала Bloom",
+    "th": "ลืมทุกอย่างที่ Bloom เรียนรู้",
+    "zh": "忘记 Bloom 学到的一切"
+  },
+  "menu.invite": {
+    "en": "Invite a friend",
+    "cs": "Pozvat kamarádku",
+    "ru": "Пригласить подругу",
+    "th": "ชวนเพื่อน",
+    "zh": "邀请好友"
+  },
+  "invite.have": {
+    "en": "Have a code?",
+    "cs": "Máš kód?",
+    "ru": "Есть код?",
+    "th": "มีโค้ดไหม?",
+    "zh": "有邀请码？"
+  },
+  "mode.cycle": {
+    "en": "Cycle",
+    "cs": "Cyklus",
+    "ru": "Цикл",
+    "th": "รอบเดือน",
+    "zh": "周期"
+  },
+  "mode.ttc": {
+    "en": "Trying",
+    "cs": "Snažení",
+    "ru": "Планирую",
+    "th": "พยายามมีลูก",
+    "zh": "备孕"
+  },
+  "mode.pregnant": {
+    "en": "Pregnant",
+    "cs": "Těhotná",
+    "ru": "Беременность",
+    "th": "ตั้งครรภ์",
+    "zh": "怀孕"
+  },
+  "mode.newborn": {
+    "en": "Newborn",
+    "cs": "Novorozeně",
+    "ru": "Новорождённый",
+    "th": "แรกเกิด",
+    "zh": "新生儿"
+  },
+  "mode.peri": {
+    "en": "Menopause",
+    "cs": "Menopauza",
+    "ru": "Менопауза",
+    "th": "วัยหมดประจำเดือน",
+    "zh": "更年期"
+  },
+  "voices.row": {
+    "en": "Voices Bloom knows",
+    "cs": "Hlasy, které Bloom zná",
+    "ru": "Голоса, которые знает Bloom",
+    "th": "เสียงที่ Bloom จำได้",
+    "zh": "Bloom 认识的声音"
+  },
+  "membk.row.off": {
+    "en": "Back up Bloom's memory",
+    "cs": "Záloha paměti Bloom",
+    "ru": "Резервная копия памяти Bloom",
+    "th": "สำรองความทรงจำของ Bloom",
+    "zh": "备份 Bloom 的记忆"
+  }
+}

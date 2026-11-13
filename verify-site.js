@@ -17,6 +17,10 @@ const ORIGIN = `http://localhost:${PORT}`;
 const ASSETLINKS_SHA = 'ba738b9df485d5fd4049d17ce3313b69d76a8e39e847125c1dd260a1ce5614ad';
 const PAGES_SPEC = ['index.html', 'support.html', 'privacy.html', 'terms.html', '404.html'];
 const PAGES = PAGES_SPEC.filter(f => fs.existsSync(path.join(ROOT, f)));
+// every page of every language (the English pages first); the generic checks (§5 requests, §11 phones) run over all of them
+const XX_LANGS = ['cs', 'ru', 'th', 'zh'];
+const XX_PAGES = XX_LANGS.flatMap(l => ['index.html', 'support.html', 'privacy.html'].map(p => `${l}/${p}`)).filter(f => fs.existsSync(path.join(ROOT, f)));
+const ALL_PAGES = [...PAGES, ...XX_PAGES];
 const BADGE_LINE = 'Coming soon to the App Store and Google Play.';
 
 let passed = 0, failed = 0;
@@ -145,7 +149,7 @@ async function main() {
         }
         for (const need of ['/support.html', '/privacy.html', '/terms.html', 'mailto:support@bloomdays.family'])
           check(`${f} links ${need}`, h.includes(`href="${need}"`));
-        heads.push(between(h, /<header class="site-head"[\s\S]*?<\/header>/).replace(/ aria-current="page"/g, ''));
+        heads.push(between(h, /<header class="site-head"[\s\S]*?<\/header>/).replace(/ aria-current="page"/g, '').replace(/\s*<nav class="lang-switch"[\s\S]*?<\/nav>/, ''));
         foots.push(between(h, /<footer class="site-foot"[\s\S]*?<\/footer>/));
         check(`${f}: has the header`, !!heads[heads.length - 1]);
         check(`${f}: has the footer`, !!foots[foots.length - 1]);
@@ -203,7 +207,7 @@ async function main() {
       const ALLOW = ['apps.apple.com', 'play.google.com', 'www.anthropic.com', 'anthropic.com', 'privacy.anthropic.com', 'openai.com', 'platform.openai.com',
         'www.revenuecat.com', 'www.cloudflare.com', 'resend.com', 'www.apple.com', 'policies.google.com', 'developer.apple.com', 'reportaproblem.apple.com',
         'support.google.com', 'bloomdays.family', 'privacy.claude.com', 'developers.openai.com', 'www.revenuecat.com', 'www.cloudflare.com', 'www.pdpc.gov.sg', 'commission.europa.eu', 'edpb.europa.eu', 'ico.org.uk', 'oag.ca.gov', 'www.atg.wa.gov', 'support.apple.com'];
-      for (const f of PAGES) {
+      for (const f of ALL_PAGES) {
         const h = pageText(f);
         for (const m of h.matchAll(/<(\w+)\b[^>]*\s(href|src|srcset)="([^"]*)"/g)) {
           const [, tag, attr, u] = m;
@@ -211,6 +215,7 @@ async function main() {
           const host = new URL(u, 'https://x/').host;
           if (tag.toLowerCase() === 'a' && attr === 'href') check(`${f}: link to ${host} is allowed`, ALLOW.includes(host));
           else if (tag.toLowerCase() === 'link' && /rel="canonical"/.test(m[0])) check(`${f}: canonical is bloomdays.family`, host === 'bloomdays.family');
+          else if (tag.toLowerCase() === 'link' && /rel="alternate"/.test(m[0])) check(`${f}: an alternate is bloomdays.family`, host === 'bloomdays.family');
           else check(`${f}: no outside request <${tag} ${attr}="${u}">`, false);
         }
         check(`${f}: no @import`, !/@import/.test(h));
@@ -224,7 +229,7 @@ async function main() {
         check(`${f}: no url() to another host`, !/url\(\s*['"]?(https?:)?\/\//i.test(s));
         check(`${f}: no fetch to another host`, !/fetch\(\s*['"`](https?:)?\/\//.test(s));
         const hosts = [...new Set([...s.matchAll(/https?:\/\/([a-z0-9.-]+)/gi)].map(m => m[1]))];
-        check(`${f}: names only known hosts`, hosts.every(h => ['play.google.com', 'bloomdays-contact.evdiag.workers.dev'].includes(h)), hosts.join(' '));
+        check(`${f}: names only known hosts`, hosts.every(h => ['play.google.com', 'apps.apple.com', 'bloomdays-contact.evdiag.workers.dev'].includes(h)), hosts.join(' '));
         check(`${f}: adds no script, frame or stylesheet`, !/createElement\(\s*['"](script|iframe|link)['"]/.test(s) && !/import\(\s*['"`]https?:/.test(s));
       }
     }
@@ -290,7 +295,7 @@ SECTIONS.push(async () => {
   const heroEnd = main.indexOf('id="chapters"');
   check('hero: <h1>Bloom</h1>', /<h1[^>]*>Bloom<\/h1>/.test(main.slice(0, heroEnd)));
   check('hero: both badges before #chapters', main.slice(0, heroEnd).includes('data-store="appStore"') && main.slice(0, heroEnd).includes('data-store="googlePlay"'));
-  check('hero: the badge line', main.slice(0, heroEnd).includes(`<p class="badge-note">${BADGE_LINE}</p>`));
+  check('hero: no "coming soon" line (Roman, 2026-11-13: the buttons link to the stores)', !main.includes('badge-note'));
   const chap = between(main, /<section[^>]*id="chapters"[\s\S]*?<\/section>/);
   const cards = [...chap.matchAll(/<article class="card chapter"[\s\S]*?<\/article>/g)].map(m => m[0]);
   check('five chapter cards', cards.length === 5, String(cards.length));
@@ -528,6 +533,389 @@ SECTIONS.push(async () => {
 });
 
 // ── §11 phones: widths, tap targets, contrast, text size, the menu, larger text
+// ── §2 (languages) links, the frame within a language, the switch
+SECTIONS.push(async () => {
+  if (!section(2, 'links and the frame — the other languages')) return;
+  const B = require(path.join(ROOT, 'build.js'));
+  for (const l of XX_LANGS) {
+    const heads = [], foots = [];
+    for (const f of B.pagesFor(l)) {
+      if (!exists(f)) { check(`${f} exists`, false); continue; }
+      const h = pageText(f);
+      for (const r of refsOf(h)) {
+        const u = r.url;
+        if (!u || u.startsWith('mailto:') || isExternal(u)) continue;
+        if (u.startsWith('#')) { check(`${f}: anchor ${u} exists`, idsOf(h).has(u.slice(1))); continue; }
+        const target = resolveFile(ROOT, u.startsWith('/') ? u : '/' + u);
+        check(`${f}: ${r.attr}="${u}" resolves`, !!target);
+        const frag = u.split('#')[1];
+        if (target && frag && target.endsWith('.html')) check(`${f}: ${u} — #${frag} exists`, idsOf(fs.readFileSync(target, 'utf8')).has(frag));
+      }
+      heads.push(between(h, /<header class="site-head"[\s\S]*?<\/header>/).replace(/ aria-current="page"/g, '').replace(/\s*<nav class="lang-switch"[\s\S]*?<\/nav>/, ''));
+      foots.push(between(h, /<footer class="site-foot"[\s\S]*?<\/footer>/));
+      const page = f.split('/')[1], key = page.replace('.html', '');
+      const canon = `https://bloomdays.family/${l}/${page === 'index.html' ? '' : page}`;
+      check(`${f}: canonical ${canon}`, h.includes(`<link rel="canonical" href="${canon}">`));
+      check(`${f}: og:url = canonical`, h.includes(`<meta property="og:url" content="${canon}">`));
+      check(`${f}: <title> in her language`, h.includes(`<title>${B.expand(`{{page.${key}.title}}`, l, {})}</title>`) && !h.includes(`<title>${B.expand(`{{page.${key}.title}}`, 'en', {})}</title>`));
+      check(`${f}: nav links stay in her language`, [...between(h, /<nav id="site-nav"[\s\S]*?<\/nav>/).matchAll(/href="([^"]+)"/g)].every(m => m[1].startsWith(`/${l}/`)));
+      check(`${f}: the brand goes to her Home`, h.includes(`<a class="brand" href="/${l}/index.html">`));
+      // the switch: her language marked; the same page where it exists in the other language, else that language's Home
+      const L = [...between(h, /<nav class="lang-switch"[\s\S]*?<\/nav>/).matchAll(/<a href="([^"]+)" hreflang="([^"]+)" lang="[^"]+"( aria-current="true")?>/g)];
+      const want = ['en', ...XX_LANGS].map(x => page === 'privacy.html' ? (x === 'en' ? '/index.html' : `/${x}/privacy.html`) : (x === 'en' ? '/' + page : `/${x}/${page}`));
+      check(`${f}: the switch's targets`, JSON.stringify(L.map(m => m[1])) === JSON.stringify(want), L.map(m => m[1]).join(' '));
+      check(`${f}: the switch marks ${l}`, L.filter(m => m[3]).length === 1 && L.find(m => m[3])[2] === B.HTML_LANG[l]);
+      const alt = [...h.matchAll(/<link rel="alternate" hreflang="([^"]+)" href="([^"]+)">/g)].map(m => m[1]);
+      check(`${f}: hreflang alternates`, page === 'privacy.html' ? JSON.stringify(alt) === '["cs","ru","th","zh-Hans"]' : JSON.stringify(alt) === '["en","cs","ru","th","zh-Hans","x-default"]', alt.join(' '));
+    }
+    check(`${l}: header identical on its pages`, heads.length === 3 && heads.every(x => x && x === heads[0]));
+    check(`${l}: footer identical on its pages`, foots.length === 3 && foots.every(x => x && x === foots[0]));
+  }
+});
+
+// ── §2 (switch in a browser) the switch keeps the part of the page she is on (final review, Review Focus 4)
+SECTIONS.push(async () => {
+  if (!browserSection(2, 'the switch keeps her place')) return;
+  for (const [from, link, want] of [['/index.html#ask', 'CS', '/cs/index.html#ask'], ['/zh/index.html#family', 'EN', '/index.html#family'], ['/cs/support.html#faq', 'RU', '/ru/support.html#faq'], ['/cs/privacy.html#choices', 'EN', '/index.html']]) {
+    await withPage(from, {}, async p => {
+      await Promise.all([p.waitForEvent('framenavigated'), p.evaluate(t => [...document.querySelectorAll('.lang-switch a')].find(a => a.textContent === t).click(), link)]);
+      await p.waitForLoadState('load');
+      const u = new URL(p.url());
+      check(`${from} → ${link} lands on ${want}`, u.pathname + u.hash === want, u.pathname + u.hash);
+    });
+  }
+});
+
+// ── §8 (languages) the form in her language, in a browser
+SECTIONS.push(async () => {
+  if (!browserSection(8, 'the form in a browser — the other languages')) return;
+  const B = require(path.join(ROOT, 'build.js'));
+  const GOOD = { email: 'anna@example.com', type: 'bug', message: 'Počítadlo pohybů se zastavilo na 9. Счётчик. ตัวนับ. 计数器。' };
+  for (const l of XX_LANGS) {
+    const url = `/${l}/support.html`, W = B.words(l);
+    const M = {}; for (const k of Object.keys(W)) if (k.startsWith('msg.')) M[k.slice(4)] = B.expand(`{{${k}}}`, l, {}).replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+    const count = p => { const n = { v: 0, bodies: [] }; p.on('request', r => { if (r.url().endsWith('/api/contact')) { n.v++; n.bodies.push(r.postData()); } }); return n; };
+    await withPage(url, {}, async p => {
+      const labels = await p.locator('#contact label.chip').evaluateAll(ls => ls.map(x => [x.querySelector('input').value, x.textContent.trim()]));
+      check(`${l}: the five types, values as in English, labels in her language`, JSON.stringify(labels) === JSON.stringify(['bug', 'idea', 'feature', 'feedback', 'other'].map(v => [v, W['type.' + v]])), JSON.stringify(labels));
+      await p.click('#contact button[type="submit"]');
+      check(`${l}: empty Send → her words`, (await p.locator('#c-email-err').textContent()).trim() === M.email && (await p.locator('#c-type-err').textContent()).trim() === M.type);
+      await p.fill('#c-email', 'x@y'); await p.check('input[name="type"][value="idea"]'); await p.fill('#c-msg', 'krátké');
+      await p.click('#contact button[type="submit"]');
+      check(`${l}: x@y and a short message → her words`, (await p.locator('#c-email-err').textContent()).trim() === M.emailBad && (await p.locator('#c-msg-err').textContent()).trim() === M.short);
+      await p.fill('#c-msg', 'x'.repeat(4600));
+      check(`${l}: the count in her words`, (await p.locator('#c-msg-count').textContent()).includes(M.count.split('{n}')[1].split('{max}')[0].trim() || '/'));
+    });
+    await withPage(url, { before: async p => { await p.clock.install({ time: new Date('2026-11-13T10:00:00Z') });
+      await p.route('**/api/contact', async r => { await new Promise(ok => setTimeout(ok, 300)); await r.fulfill({ status: 200, contentType: 'application/json', body: '{"ok":true}' }); }); } }, async p => {
+      const n = count(p);
+      await p.fill('#c-email', GOOD.email); await p.check('input[name="type"][value="bug"]'); await p.fill('#c-msg', GOOD.message);
+      await p.clock.runFor(4000);
+      await p.click('#contact button[type="submit"]');
+      await p.evaluate(() => { const f = document.getElementById('contact'); if (f) f.requestSubmit(); });
+      await p.waitForTimeout(600); await p.clock.runFor(400); await p.waitForTimeout(150);
+      check(`${l}: one request on a double tap`, n.v === 1, String(n.v));
+      let b = {}; try { b = JSON.parse(n.bodies[0]); } catch {}
+      check(`${l}: the body has exactly the six keys, type bug`, JSON.stringify(Object.keys(b).sort()) === '["email","message","ms","page","type","website"]' && b.type === 'bug' && b.message === GOOD.message);
+      check(`${l}: the thank-you in her words`, (await p.locator('main').textContent()).includes(M.thanks.replace('{email}', GOOD.email)));
+    });
+    await withPage(url, { before: async p => { await p.clock.install({ time: new Date('2026-11-13T10:00:00Z') }); await p.route('**/api/contact', r => r.fulfill({ status: 500, body: 'x' })); } }, async p => {
+      await p.fill('#c-email', GOOD.email); await p.check('input[name="type"][value="feedback"]'); await p.fill('#c-msg', GOOD.message);
+      await p.clock.runFor(4000); await p.click('#contact button[type="submit"]'); await p.clock.runFor(400); await p.waitForTimeout(200);
+      check(`${l}: a failed send → her fail line`, (await p.locator('#c-status').textContent()).trim() === M.fail.replace('{support}', 'support@bloomdays.family'));
+      check(`${l}: …and the copy-and-email box, its lead in her words`, await p.locator('#c-fallback').isVisible() && (await p.locator('#c-fallback [data-fb-lead]').textContent()).trim() === M.didnt);
+      const sub = decodeURIComponent((await p.locator('#c-fallback [data-mailto]').getAttribute('href')).split('subject=')[1].split('&')[0]);
+      check(`${l}: the mailto subject stays English (Roman reads it)`, sub === 'Bloom · Feedback', sub);
+    });
+    await withPage(url, { js: false }, async p => {
+      const t = (await p.locator('main').textContent()).replace(/\s+/g, ' ');
+      check(`${l}: JS off — the noscript line in her language`, t.includes(B.expand('{{{sup.noscript}}}', l, {}).replace(/<[^>]+>/g, '')));
+      check(`${l}: JS off — the form hidden`, !(await p.locator('#contact').isVisible()));
+    });
+    for (const pg of ['index.html', 'privacy.html']) await withPage(`/${l}/${pg}`, { js: false }, async p => {
+      check(`${l}/${pg}: JS off — readable, in her language`, await p.locator('main h1, main h2').first().isVisible() && await p.evaluate(() => document.documentElement.lang) === B.HTML_LANG[l]);
+    });
+  }
+});
+
+// ── §4 (languages) the real screens in her language
+SECTIONS.push(async () => {
+  if (!section(4, 'home — the screens in each language')) return;
+  for (const l of ['cs', 'ru', 'th', 'zh']) {
+    const f = `${l}/index.html`;
+    if (!exists(f)) { check(`${f} exists`, false); continue; }
+    const h = read(f), en = read('index.html');
+    const shots = [...h.matchAll(/<figure class="phone" data-screen="([^"]+)"><img src="([^"]+)" width="390" height="844" alt="([^"]+)"/g)].map(m => ({ name: m[1], src: m[2], alt: m[3] }));
+    const enAlts = Object.fromEntries([...en.matchAll(/data-screen="([^"]+)"><img src="[^"]+" width="390" height="844" alt="([^"]+)"/g)].map(m => [m[1], m[2]]));
+    check(`${f}: five screens`, shots.length === 5, String(shots.length));
+    for (const s of shots) {
+      check(`${f}: ${s.name} from img/screens/${l}/`, s.src === `/img/screens/${l}/${s.name}.webp`, s.src);
+      check(`${f}: ${s.name}'s alt in her language`, s.alt !== enAlts[s.name]);
+      const p = s.src.slice(1);
+      if (!exists(p)) { check(`${p} exists`, false); continue; }
+      const b = readBuf(p), dim = webpSize(b);
+      check(`${p}: 780 × 1688`, dim && dim.w === 780 && dim.h === 1688, JSON.stringify(dim));
+      check(`${p}: ≤ 180 KB`, b.length <= 180 * 1024, String(b.length));
+    }
+  }
+});
+
+// ── §6 (languages) the not-found and the invite in her language
+SECTIONS.push(async () => {
+  if (!browserSection(6, '404 and the invite — her language')) return;
+  const block = (() => { const m = read('404.html').match(/<script type="application\/json" id="i18n-404">([\s\S]*?)<\/script>/); try { return m ? JSON.parse(m[1]) : null; } catch { return null; } })();
+  check('404.html carries the words of all five languages', !!block && JSON.stringify(Object.keys(block)) === '["en","cs","ru","th","zh"]', block ? Object.keys(block).join(' ') : 'no block');
+  if (!block) return;
+  const NEED = ['title', 'nf.title', 'nf.lede', 'nf.home', 'nf.haveApp', 'inv.title', 'inv.lede', 'inv.copy', 'inv.copied', 'inv.copyFail', 'inv.steps', 'inv.docTitle'];
+  for (const l of Object.keys(block)) check(`404 words ${l}: every key`, NEED.every(k => typeof block[l][k] === 'string' && block[l][k].trim()), NEED.filter(k => !(block[l][k] || '').trim()).join(' '));
+  const H = { en: 'en', cs: 'cs', ru: 'ru', th: 'th', zh: 'zh-Hans' };
+  const cases = [['cs-CZ', 'cs'], ['ru-RU', 'ru'], ['th-TH', 'th'], ['zh-CN', 'zh'], ['zh-TW', 'zh'], ['zh-HK', 'zh'], ['de-DE', 'en'], ['en-GB', 'en']];
+  for (const [locale, l] of cases) {
+    const W = block[l];
+    if (!W) { check(`${locale}: words for ${l} exist`, false); continue; }
+    await withPage('/r/ABC123', { ctx: { locale } }, async page => {
+      check(`${locale} invite → ${l}: the heading`, (await page.locator('#invite h1').textContent()).trim() === W['inv.title'], await page.locator('#invite h1').textContent());
+      check(`${locale} invite → ${l}: the lede and the steps`, (await page.locator('#invite .lede').textContent()).trim() === W['inv.lede'] && (await page.locator('#invite [data-t="inv.steps"]').textContent()).trim() === W['inv.steps']);
+      check(`${locale} invite → ${l}: <html lang>`, await page.evaluate(() => document.documentElement.lang) === H[l]);
+      check(`${locale} invite → ${l}: the tab title`, await page.title() === W['inv.docTitle']);
+      check(`${locale} invite → ${l}: the code and Play link still work`, (await page.locator('[data-code]').first().textContent()).trim() === 'ABC123'
+        && /referrer=code%3DABC123/.test(await page.locator('#invite [data-store="googlePlay"]').getAttribute('href') || ''));
+      if (l !== 'en') check(`${locale}: words differ from English`, W['inv.title'] !== block.en['inv.title'] && W['nf.title'] !== block.en['nf.title']);
+    });
+    await withPage('/nothing', { ctx: { locale } }, async page => {
+      check(`${locale} not-found → ${l}: the heading`, (await page.locator('#notfound h1').textContent()).trim() === W['nf.title']);
+      check(`${locale} not-found → ${l}: home is ${l === 'en' ? '/index.html' : '/' + l + '/index.html'}`, await page.locator('#notfound a.btn').getAttribute('href') === (l === 'en' ? '/index.html' : `/${l}/index.html`)
+        && (await page.locator('#notfound a.btn').textContent()).trim() === W['nf.home']);
+      check(`${locale} not-found → ${l}: the tab title`, await page.title() === W.title);
+    });
+  }
+  await withPage('/r/ABC123', { js: false, ctx: { locale: 'cs-CZ' } }, async page => {
+    check('JS off, Czech phone: the not-found in English', (await page.locator('#notfound h1').textContent()).trim() === "This page isn't here." && await page.locator('#notfound h1').isVisible());
+  });
+  await withPage('/nothing', {}, async page => {
+    const r = await page.evaluate(() => { const P = window.BloomSite && window.BloomSite.pickLang; if (!P) return null;
+      return [P(['de-DE', 'cs']), P(['en-US', 'cs']), P(['zh-Hant-TW']), P(['ZH-hk']), P(['th']), P([]), P(['pt-BR', 'fr'])]; });
+    check('pickLang: her languages in her order; zh-* → zh; English otherwise', JSON.stringify(r) === '["cs","en","zh","zh","th","en","en"]', JSON.stringify(r));
+  });
+  await withPage('/r/ABC123', { ctx: { locale: 'cs-CZ' }, permissions: ['clipboard-read', 'clipboard-write'] }, async page => {
+    await page.locator('#invite [data-copy]').click();
+    await page.waitForTimeout(150);
+    check('cs: the Copy button then reads its Copied', (await page.locator('#invite [data-copy]').textContent()).trim() === (block.cs ? block.cs['inv.copied'] : '?'));
+  });
+});
+
+// ── §8 (words) the form takes its words from the page
+SECTIONS.push(async () => {
+  if (!section(8, 'the form — its words from the page')) return;
+  const h = read('support.html');
+  const m = h.match(/<form id="contact"[^>]*\sdata-msg="([^"]*)"/);
+  let M = null; try { M = m ? JSON.parse(m[1].replace(/&quot;/g, '"').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&')) : null; } catch {}
+  const KEYS = ['email', 'emailBad', 'type', 'short', 'long', 'sending', 'send', 'thanks', 'fail', 'notYet', 'didnt', 'copied', 'copyFail', 'count', 'cut'];
+  check('support.html: the form carries its words (data-msg, JSON)', !!M, m ? m[1].slice(0, 80) : 'no data-msg');
+  if (M) check('data-msg has every word', KEYS.every(k => typeof M[k] === 'string' && M[k]), KEYS.filter(k => !M[k]).join(' '));
+  if (M) check('the English words are today\'s', M.email === 'Please enter your email.' && M.thanks === "Thank you — your message is on its way. We'll answer at {email}."
+    && M.fail === "It didn't go through. Please try again, or write to {support}." && M.send === 'Send message' && M.count === '{n} of {max}');
+  const js = read('js/support.js');
+  for (const w of ['Please enter your email', "doesn't look right", 'Please choose', 'write a little more', 'Thank you', "didn't go through", 'Sending…', 'Select and copy', "isn't sending"])
+    check(`support.js has no English word "${w}" (it reads them from the page)`, !js.includes(w));
+  check('support.js still names the types in English for the email (LABELS)', /const LABELS = \{ bug: 'Report a bug'/.test(js));
+  const sj = read('js/site.js');
+  for (const w of ['Copied', 'Copy failed', 'A little gift from a friend']) check(`site.js has no English word "${w}"`, !sj.includes(w));
+});
+
+// ── §12 the page writer
+SECTIONS.push(async () => {
+  if (!section(12, 'the page writer')) return;
+  check('build.js exists', exists('build.js'));
+  if (!exists('build.js')) return;
+  const { spawnSync } = require('node:child_process');
+  const os = require('node:os');
+  const B = require(path.join(ROOT, 'build.js'));
+  const r0 = spawnSync(process.execPath, ['build.js', '--check'], { cwd: ROOT, encoding: 'utf8' });
+  check('build.js --check passes', r0.status === 0, (r0.stdout + r0.stderr).trim().split('\n').slice(0, 5).join(' | '));
+  // a page edited by hand is caught, naming the file and the way to fix it
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'bloom-site-'));
+  try {
+    fs.cpSync(ROOT, tmp, { recursive: true, filter: s => !/[\\/](\.git|\.superpowers|node_modules)([\\/]|$)/.test(s) });
+    const victim = B.LANGS.filter(B.hasLang).length > 1 ? 'cs/index.html' : 'index.html';
+    const vf = path.join(tmp, victim);
+    const before = fs.readFileSync(vf, 'utf8');
+    fs.writeFileSync(vf, before.replace(/(<h2>[^<]{2})/, '$1x'));
+    const r1 = spawnSync(process.execPath, ['build.js', '--check'], { cwd: tmp, encoding: 'utf8' });
+    check(`a hand edit of ${victim} fails --check, naming the file and "edit src/"`,
+      r1.status === 1 && r1.stdout.includes(`${victim} differs from what build.js writes — edit src/ and run node build.js`), r1.stdout.trim());
+    fs.writeFileSync(vf, before);
+    fs.rmSync(path.join(tmp, victim));
+    const r2 = spawnSync(process.execPath, ['build.js', '--check'], { cwd: tmp, encoding: 'utf8' });
+    check(`a missing ${victim} fails --check`, r2.status === 1 && r2.stdout.includes(victim), r2.stdout.trim());
+  } finally { fs.rmSync(tmp, { recursive: true, force: true }); }
+  check('LANGS', JSON.stringify(B.LANGS) === '["en","cs","ru","th","zh"]');
+  check('HTML_LANG', JSON.stringify(B.HTML_LANG) === '{"en":"en","cs":"cs","ru":"ru","th":"th","zh":"zh-Hans"}');
+  check('pagesFor(en)', JSON.stringify(B.pagesFor('en')) === '["index.html","support.html","privacy.html","terms.html","404.html"]');
+  check('pagesFor(cs)', JSON.stringify(B.pagesFor('cs')) === '["cs/index.html","cs/support.html","cs/privacy.html"]');
+  for (const lang of B.LANGS.filter(B.hasLang)) for (const page of B.pagesFor(lang)) {
+    const keys = B.keysUsed(lang, page);
+    check(`${page}: keysUsed is not empty`, keys.length > 0);
+    for (const k of keys) check(`${lang}: key ${k} has a value`, B.has(lang, k));
+    check(`${page}: render(${lang}) = the file`, exists(page) && B.render(lang, page) === read(page));
+  }
+  // template rules
+  check('a missing key stops the build with its name', (() => { try { B.expand('{{no.such.key}}', 'en', {}); return false; } catch (e) { return /missing key "no\.such\.key" for en/.test(e.message); } })());
+  check('a missing app word stops the build with its name', (() => { try { B.expand('{{app:no.such}}', 'en', {}); return false; } catch (e) { return /missing app word "no\.such" for en/.test(e.message); } })());
+  check('{{key}} is escaped, {{{key}}} is not', B.expand('{{x}}|{{{x}}}', 'en', {}, { x: 'a & <b>' }) === 'a &amp; &lt;b&gt;|a & <b>');
+  // the switch
+  const sw = f => between(read(f), /<nav class="lang-switch"[\s\S]*?<\/nav>/);
+  const links = f => [...sw(f).matchAll(/<a href="([^"]+)" hreflang="([^"]+)" lang="([^"]+)"( aria-current="true")?>([^<]+)<\/a>/g)].map(m => ({ href: m[1], hreflang: m[2], lang: m[3], cur: !!m[4], text: m[5] }));
+  const want = { 'index.html': ['/index.html', '/cs/index.html', '/ru/index.html', '/th/index.html', '/zh/index.html'],
+    'support.html': ['/support.html', '/cs/support.html', '/ru/support.html', '/th/support.html', '/zh/support.html'],
+    'privacy.html': ['/privacy.html', '/cs/index.html', '/ru/index.html', '/th/index.html', '/zh/index.html'],
+    'terms.html': ['/terms.html', '/cs/index.html', '/ru/index.html', '/th/index.html', '/zh/index.html'] };
+  for (const [f, hrefs] of Object.entries(want)) {
+    const L = links(f);
+    check(`${f}: the switch has EN CS RU TH 中文`, L.map(l => l.text).join(' ') === 'EN CS RU TH 中文', L.map(l => l.text).join(' '));
+    check(`${f}: the switch's targets`, JSON.stringify(L.map(l => l.href)) === JSON.stringify(hrefs), L.map(l => l.href).join(' '));
+    check(`${f}: EN is marked current, only EN`, L.length === 5 && L[0].cur && L.slice(1).every(l => !l.cur));
+    check(`${f}: hreflang and lang on each`, JSON.stringify(L.map(l => l.hreflang)) === '["en","cs","ru","th","zh-Hans"]' && L.every(l => l.lang === l.hreflang));
+  }
+  check('404.html: no switch', !/class="lang-switch"/.test(read('404.html')));
+  for (const f of ['index.html', 'support.html']) {
+    const h = read(f), u = f === 'index.html' ? '' : f;
+    const alt = [...h.matchAll(/<link rel="alternate" hreflang="([^"]+)" href="([^"]+)">/g)].map(m => m[1] + '=' + m[2]);
+    check(`${f}: hreflang alternates`, JSON.stringify(alt) === JSON.stringify(['en=https://bloomdays.family/' + u, 'cs=https://bloomdays.family/cs/' + u, 'ru=https://bloomdays.family/ru/' + u,
+      'th=https://bloomdays.family/th/' + u, 'zh-Hans=https://bloomdays.family/zh/' + u, 'x-default=https://bloomdays.family/' + u]), alt.join(' '));
+  }
+  for (const f of ['privacy.html', 'terms.html', '404.html']) check(`${f}: no hreflang alternates`, !/rel="alternate"/.test(read(f)));
+});
+
+// ── §13 the four other languages: words, the summary, fonts
+SECTIONS.push(async () => {
+  if (!section(13, 'the other languages')) return;
+  if (!exists('build.js')) { check('build.js exists', false); return; }
+  const B = require(path.join(ROOT, 'build.js'));
+  const XX = ['cs', 'ru', 'th', 'zh'];
+  const SAME_OK = new Set(['badge.as.w', 'badge.gp.w', 'msg.send']);
+  const en = B.words('en');
+  const BAN = { all: ['android', 'evdiag', 's.r.o', 'bloom.app', 'coming to google play'],
+    cs: ['maminka', 'maminko', 'brzy na google play'], ru: ['андроид', 'мамочк', 'мамуль', 'скоро в google play'], th: ['แอนดรอยด์'], zh: ['安卓', '宝妈', '麻麻'] };
+  const SOON = { cs: 'brzy', ru: 'скоро', th: 'เร็วๆ นี้', zh: '即将' };
+  const RECIPIENTS = ['Anthropic', 'OpenAI', 'Cloudflare', 'RevenueCat', 'Apple', 'Google', 'Resend', 'Health Connect'];
+  const plain = h => textOf(h).replace(/\s+/g, ' ');
+  for (const l of XX) {
+    check(`${l}: src/i18n/${l}.json exists`, B.hasLang(l));
+    if (!B.hasLang(l)) continue;
+    const W = B.words(l);
+    const missing = Object.keys(en).filter(k => typeof W[k] !== 'string' || !W[k].trim());
+    check(`${l}: every English key has a value`, missing.length === 0, missing.slice(0, 8).join(' '));
+    const extra = Object.keys(W).filter(k => !(k in en));
+    check(`${l}: no key English lacks`, extra.length === 0, extra.join(' '));
+    const same = Object.keys(en).filter(k => W[k] === en[k] && !SAME_OK.has(k) && /[a-z]{3}/.test(en[k]));
+    check(`${l}: nothing left in English`, same.length === 0, same.slice(0, 8).join(' '));
+    for (const k of Object.keys(W)) {
+      const ph = s => JSON.stringify([...String(s).matchAll(/\{\{\{?([^{}]+)\}?\}\}|\{(\w+)\}/g)].map(m => m[1] || m[2]).sort());
+      if (k in en && k !== 'foot.links') check(`${l}: ${k} keeps the placeholders`, ph(W[k]) === ph(en[k]), `${ph(W[k])} vs ${ph(en[k])}`);
+      // the same links (a link into the English policy may point at another part of her summary: the fragment may differ)
+      const links = s => JSON.stringify([...String(s).matchAll(/href="([^"]*)"/g)].map(m => m[1].replace(/^(\{\{root\}\}\/privacy\.html)#.*$/, '$1')).sort());
+      if (k in en && !k.startsWith('foot.') && /href=/.test(en[k])) check(`${l}: ${k} keeps its links`, links(W[k]) === links(en[k]), `${links(W[k])} vs ${links(en[k])}`);
+    }
+    // the warnings keep their meaning: each carries its language's words for what it must say
+    const MUST = {
+      'warn.general': { cs: ['lékařsk', 'antikoncep'], ru: ['медицинск', 'контрацеп'], th: ['การแพทย์', 'คุมกำเนิด'], zh: ['医疗建议', '避孕'] },
+      'foot.warn': { cs: ['lékařsk', 'zdravotnický prostředek', 'antikoncep'], ru: ['медицинск', 'медицинское изделие', 'контрацеп'], th: ['การแพทย์', 'เครื่องมือแพทย์', 'คุมกำเนิด'], zh: ['医疗建议', '医疗器械', '避孕'] },
+      'warn.askDoctor': { cs: ['lékař', 'porodní asistent'], ru: ['врач', 'акушер'], th: ['แพทย์', 'ผดุงครรภ์'], zh: ['医生', '助产士'] },
+      'warn.emergency': { cs: ['tísňov'], ru: ['экстренн'], th: ['ฉุกเฉิน'], zh: ['急'] },
+      'ask.flow': { cs: ['Anthropic', 'OpenAI', 'přímo'], ru: ['Anthropic', 'OpenAI', 'прямо'], th: ['Anthropic', 'OpenAI', 'โดยตรง'], zh: ['Anthropic', 'OpenAI', '直接'] },
+      'faq.medical.a': { cs: ['antikoncep', 'odhad'], ru: ['контрацеп', 'оценка'], th: ['คุมกำเนิด', 'ประมาณ'], zh: ['避孕', '估算'] },
+    };
+    if (l === 'zh') for (const k of ['home.priv.t2', 'sum.short.3']) check(`zh: ${k} says your data is never sold, not "nothing is sold" (Pro is sold)`, String(W[k]).includes('数据'), W[k]);
+    for (const [k, by] of Object.entries(MUST)) check(`${l}: ${k} says ${by[l].join(' + ')}`, by[l].every(w => String(W[k] || '').toLowerCase().includes(w.toLowerCase())), W[k]);
+    for (const f of B.pagesFor(l)) {
+      check(`${f} exists`, exists(f));
+      if (!exists(f)) continue;
+      const h = read(f), t = plain(h), low = t.toLowerCase(), hl = noComments(h).toLowerCase();
+      check(`${f}: <html lang="${B.HTML_LANG[l]}">`, h.includes(`<html lang="${B.HTML_LANG[l]}">`));
+      check(`${f}: og:locale ${B.OG_LOCALE[l]}`, h.includes(`<meta property="og:locale" content="${B.OG_LOCALE[l]}">`));
+      for (const w of [...BAN.all, ...BAN[l]]) check(`${f}: no "${w}"`, !hl.includes(w));
+      check(`${f}: no price`, !/[$€£¥฿₽]|\bkč\b|\busd\b|\beur\b|\d+[.,]\d\d\b/i.test(t));
+      for (const k of ['foot.warn']) check(`${f}: says ${k}`, t.includes(plain(B.expand(`{{${k}}}`, l, {}))));
+      if (!f.endsWith('privacy.html')) for (const k of ['warn.general']) check(`${f}: says ${k}`, t.includes(plain(B.expand(`{{${k}}}`, l, {}))));
+      if (f.endsWith('index.html')) for (const k of ['warn.askDoctor', 'warn.emergency', 'ask.flow']) check(`${f}: says ${k}`, t.includes(plain(B.expand(`{{{${k}}}}`, l, {}))));
+      check(`${f}: Roman Franta only on the summary`, f.endsWith('privacy.html') || !low.includes('roman franta'));
+      const foot = between(h, /<footer class="site-foot"[\s\S]*?<\/footer>/);
+      for (const u of [`/${l}/support.html`, `/${l}/privacy.html`, '/privacy.html', '/privacy.html#health-data', '/terms.html', 'mailto:support@bloomdays.family'])
+        check(`${f}: the footer links ${u}`, foot.includes(`href="${u}"`));
+      check(`${f}: no font preload (${l === 'cs' ? 'Fraunces/Outfit preloaded' : 'the phone\'s fonts'})`, l === 'cs' ? /rel="preload" href="\/fonts\//.test(h) : !/\/fonts\//.test(h));
+      // the app's own words, exactly as the app has them
+      const tpl = fs.readFileSync(path.join(ROOT, 'src/pages', f.endsWith('privacy.html') ? 'summary.html' : f.split('/')[1]), 'utf8');
+      const appKeys = new Set([...tpl.matchAll(/\{\{app:([^}]+)\}\}/g)].map(m => m[1]));
+      for (const k of B.keysUsed(l, f)) for (const m of String(B.words(l)[k] || '').matchAll(/\{\{app:([^}]+)\}\}/g)) appKeys.add(m[1]);
+      for (const k of appKeys) check(`${f}: the app's word ${k} = "${B.appWords()[k][l]}"`, t.includes(B.appWords()[k][l]));
+    }
+    const sum = `${l}/privacy.html`;
+    if (exists(sum)) {
+      const h = read(sum), t = plain(h);
+      for (const r of RECIPIENTS) check(`${sum}: names ${r}`, t.includes(r));
+      const box = between(h, /<div class="card sage applies"[\s\S]*?<\/div>/);
+      check(`${sum}: the box links the English policy and the terms`, box.includes('href="/privacy.html"') && box.includes('href="/terms.html"'));
+      check(`${sum}: ten rows, as the English table + the support form`, (h.match(/<tr><td/g) || []).length === 10);
+      check(`${sum}: Roman Franta and Singapore`, t.includes('Roman Franta') && /Singap|Сингап|สิงคโปร์|新加坡/.test(t));
+      for (const id of ['who', 'short', 'leaves', 'choices', 'health-data']) check(`${sum}: #${id}`, h.includes(`id="${id}"`));
+    }
+  }
+  // the badges in her language: Apple's and Google's official artwork, App Store first, 48 px high
+  for (const l of XX) for (const f of ['index.html', 'support.html'].map(p => `${l}/${p}`)) {
+    if (!exists(f)) continue;
+    const h = read(f);
+    for (const m of h.matchAll(/<div class="badges"[\s\S]*?<\/div>/g)) {
+      const imgs = [...m[0].matchAll(/<img src="([^"]+)" width="(\d+)" height="(\d+)" alt="([^"]+)">/g)].map(x => ({ src: x[1], w: +x[2], h: +x[3], alt: x[4] }));
+      check(`${f}: two badges`, imgs.length === 2);
+      if (imgs.length !== 2) continue;
+      check(`${f}: App Store first, from img/badges/${l}/`, imgs[0].src === `/img/badges/${l}/app-store.svg` && /^\/img\/badges\/[a-z]{2}\/google-play\.(svg|png)$/.test(imgs[1].src) && imgs[1].src.startsWith(`/img/badges/${l}/`), imgs.map(i => i.src).join(' '));
+      check(`${f}: both 48 px high`, imgs.every(i => i.h === 48));
+      check(`${f}: the badge alts in her language`, imgs[0].alt !== 'Download on the App Store' && imgs[1].alt !== 'Get it on Google Play');
+      for (const i of imgs) {
+        const ok = exists(i.src.slice(1));
+        check(`${i.src} exists`, ok);
+        if (!ok) continue;
+        let ratio = 0;
+        if (i.src.endsWith('.svg')) { const vb = read(i.src.slice(1)).match(/viewBox="0 0 ([\d.]+) ([\d.]+)"/); ratio = vb ? vb[1] / vb[2] : 0; }
+        else { const b = readBuf(i.src.slice(1)); ratio = b.readUInt32BE(16) / b.readUInt32BE(20); check(`${i.src}: a PNG at least 2× (≥ 96 px high)`, b.readUInt32BE(20) >= 96); }
+        check(`${i.src}: width ${i.w} keeps its shape at 48 px`, ratio > 0 && Math.abs(i.w - 48 * ratio) <= 1, `${(48 * ratio).toFixed(1)}`);
+      }
+    }
+  }
+
+  const css = read('css/site.css');
+  for (const f of ['fraunces-latin-ext-opsz-normal.woff2', 'fraunces-latin-ext-opsz-italic.woff2', 'outfit-latin-ext-wght-normal.woff2'])
+    check(`latin-ext font ${f}: in fonts/ and in site.css with a unicode-range`, exists('fonts/' + f) && new RegExp(`@font-face \\{[^}]*${f.replace(/\./g, '\\.')}[^}]*unicode-range`).test(css));
+  check('site.css: the latin files keep to latin (unicode-range)', /@font-face \{[^}]*fraunces-latin-opsz-normal[^}]*unicode-range/.test(css));
+  check('site.css: :lang(ru), :lang(th), :lang(zh-Hans) use the phone\'s fonts', /:lang\(ru\)[\s\S]*?:lang\(th\)[\s\S]*?:lang\(zh-Hans\)[^{]*\{[^}]*--font-display:[^;]*system-ui/.test(css));
+  check('site.css: Thai line height 1.8', /:lang\(th\)[^{]*\{[^}]*line-height:\s*1\.8/.test(css));
+  check('site.css: the summary table labels from data-label', /\.sum-table td::before\s*\{[^}]*content:\s*attr\(data-label\)/.test(css));
+});
+
+// ── §14 the store buttons link to the stores (Roman, 2026-11-13: links now, even while the iPhone app waits for Apple)
+SECTIONS.push(async () => {
+  if (!section(14, 'the store links')) return;
+  const AS = 'https://apps.apple.com/app/id6833483759', GP = 'https://play.google.com/store/apps/details?id=family.bloomdays';
+  const B = exists('build.js') ? require(path.join(ROOT, 'build.js')) : null;
+  const files = B ? B.LANGS.flatMap(l => B.pagesFor(l)) : PAGES;
+  const SOON = { en: /coming soon|coming to/i, cs: /brzy|míří/i, ru: /скоро|появится/i, th: /เร็วๆ นี้|กำลังจะมาบน/, zh: /即将|将来到/ };
+  for (const f of files) {
+    const h = read(f), l = (f.match(/^(cs|ru|th|zh)\//) || [, 'en'])[1];
+    const badges = [...h.matchAll(/<(a|span) class="badge"([^>]*)>/g)];
+    for (const b of badges) {
+      const store = (b[2].match(/data-store="(\w+)"/) || [])[1];
+      check(`${f}: the ${store} badge is a link`, b[1] === 'a' && !/aria-disabled/.test(b[2]));
+      check(`${f}: the ${store} badge goes to its store`, b[2].includes(`href="${store === 'appStore' ? AS : GP}"`), b[2]);
+    }
+    check(`${f}: no "coming soon" line`, !/badge-note/.test(h));
+    if (!/privacy\.html$|terms\.html$/.test(f)) check(`${f}: no coming-soon words`, !SOON[l].test(textOf(h)), (textOf(h).match(SOON[l]) || [])[0]);
+  }
+  const js = read('js/site.js');
+  check('site.js: STORE holds both links', js.includes(`appStore: '${AS}'`) && js.includes(`googlePlay: '${GP}'`));
+  check('site.js: may call apps.apple.com', true);
+});
+
 const AUDIT = () => {
   const lum = c => { const [r, g, b] = c.map(v => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }); return 0.2126 * r + 0.7152 * g + 0.0722 * b; };
   const rgb = s => { const m = s.match(/rgba?\(([^)]+)\)/); if (!m) return null; const p = m[1].split(/[ ,/]+/).filter(Boolean).map(Number); return p.length === 3 ? [...p, 1] : p; };
@@ -562,7 +950,7 @@ const AUDIT = () => {
 };
 SECTIONS.push(async () => {
   if (!browserSection(11, 'phones')) return;
-  for (const f of PAGES) {
+  for (const f of ALL_PAGES) {
     const url = f === '404.html' ? '/r/ABC123' : '/' + f;
     for (const w of [320, 360, 390, 412]) {
       await withPage(url, { width: w }, async p => {

@@ -7,6 +7,13 @@ const EMAIL = 'support@bloomdays.family';
 const LABELS = { bug: 'Report a bug', idea: 'New idea', feature: 'Feature request', feedback: 'Feedback', other: 'Something else' };
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
+// The words she reads come from the page (data-msg, written by build.js in her language); the email to us names the type in English.
+const form = document.getElementById('contact');
+const M = (() => { try { return JSON.parse(form.dataset.msg); } catch { return {}; } })();
+const LOC = document.documentElement.lang || 'en';
+const num = n => n.toLocaleString(LOC);
+const fill = (s, v) => String(s || '').replace(/\{(\w+)\}/g, (_, k) => (k in v ? v[k] : ''));
+
 const shownAt = Date.now();
 
 function collect(form) {
@@ -18,11 +25,11 @@ function collect(form) {
 
 function validate(d) {
   const e = {};
-  if (!d.email) e.email = 'Please enter your email.';
-  else if (!EMAIL_RE.test(d.email) || d.email.length > 254) e.email = "That email doesn't look right.";
-  if (!LABELS[d.type]) e.type = 'Please choose what it is about.';
-  if ((d.message || '').length < MIN_LEN) e.message = 'Please write a little more.';
-  else if (d.message.length > MAX_LEN) e.message = `Please keep it under ${MAX_LEN.toLocaleString('en')} characters.`;
+  if (!d.email) e.email = M.email;
+  else if (!EMAIL_RE.test(d.email) || d.email.length > 254) e.email = M.emailBad;
+  if (!LABELS[d.type]) e.type = M.type;
+  if ((d.message || '').length < MIN_LEN) e.message = M.short;
+  else if (d.message.length > MAX_LEN) e.message = fill(M.long, { max: num(MAX_LEN) });
   return e;
 }
 
@@ -47,14 +54,13 @@ function mailtoHref(d) {
   if (body.length > MAILTO_MAX) {
     let cut = body.slice(0, MAILTO_MAX);
     if (/[\uD800-\uDBFF]$/.test(cut)) cut = cut.slice(0, -1);     // never split an emoji in half
-    body = cut + '\n\n…(the full message is copied — paste it here)';
+    body = cut + '\n\n' + M.cut;
   }
   return `mailto:${EMAIL}?subject=${encodeURIComponent('Bloom · ' + (LABELS[d.type] || 'Message'))}&body=${encodeURIComponent(body)}`;
 }
 
 window.BloomSupport = { collect, validate, fallbackText, mailtoHref };
 
-const form = document.getElementById('contact');
 if (form) {
   const btn = form.querySelector('button[type="submit"]');
   const status = document.getElementById('c-status');
@@ -79,7 +85,7 @@ if (form) {
   });
   form.elements.message.addEventListener('input', () => {
     const n = form.elements.message.value.length;
-    count.textContent = n >= 4500 ? `${n.toLocaleString('en')} of ${MAX_LEN.toLocaleString('en')}` : '';
+    count.textContent = n >= 4500 ? fill(M.count, { n: num(n), max: num(MAX_LEN) }) : '';
   });
 
   form.addEventListener('submit', async ev => {
@@ -97,24 +103,24 @@ if (form) {
       fb.hidden = false;
       fb.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     };
-    if (!SEND) { showFallback("The form isn't sending yet."); return; }
+    if (!SEND) { showFallback(M.notYet); return; }
     const thanks = () => {
       const p = document.createElement('div');
       p.className = 'card sage thanks';
       p.setAttribute('role', 'status');
-      p.textContent = `Thank you — your message is on its way. We'll answer at ${d.email}.`;
+      p.textContent = fill(M.thanks, { email: d.email });
       form.replaceWith(p);
     };
     if (d.website || d.ms < MIN_MS) { thanks(); return; }        // a robot, most likely: say thank you, send nothing
-    busy = true; btn.disabled = true; btn.textContent = 'Sending…';
+    busy = true; btn.disabled = true; btn.textContent = M.sending;
     const r = await send(d);
-    busy = false; btn.disabled = false; btn.textContent = 'Send message';
+    busy = false; btn.disabled = false; btn.textContent = M.send;
     if (r === 'ok') thanks();
-    else { status.textContent = `It didn't go through. Please try again, or write to ${EMAIL}.`; showFallback("It didn't go through."); }
+    else { status.textContent = fill(M.fail, { support: EMAIL }); showFallback(M.didnt); }
   });
 
   fb.querySelector('[data-copy-msg]').addEventListener('click', async ev => {
-    try { await navigator.clipboard.writeText(fb.querySelector('textarea').value); ev.target.textContent = 'Copied'; }
-    catch { fb.querySelector('textarea').select(); ev.target.textContent = 'Select and copy the text above'; }
+    try { await navigator.clipboard.writeText(fb.querySelector('textarea').value); ev.target.textContent = M.copied; }
+    catch { fb.querySelector('textarea').select(); ev.target.textContent = M.copyFail; }
   });
 }

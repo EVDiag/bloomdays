@@ -8,6 +8,12 @@
 <title>Support — Bloom</title>
 <meta name="description" content="Questions, bugs and ideas: write to support@bloomdays.family, or send a message from this page. A person reads every one.">
 <link rel="canonical" href="https://bloomdays.family/support.html">
+<link rel="alternate" hreflang="en" href="https://bloomdays.family/support.html">
+<link rel="alternate" hreflang="cs" href="https://bloomdays.family/cs/support.html">
+<link rel="alternate" hreflang="ru" href="https://bloomdays.family/ru/support.html">
+<link rel="alternate" hreflang="th" href="https://bloomdays.family/th/support.html">
+<link rel="alternate" hreflang="zh-Hans" href="https://bloomdays.family/zh/support.html">
+<link rel="alternate" hreflang="x-default" href="https://bloomdays.family/support.html">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Bloom">
 <meta property="og:title" content="Support — Bloom">
@@ -27,6 +33,7 @@
   <a class="brand" href="/index.html"><img src="/img/paint/logo.webp" width="40" height="40" alt=""> <span>Bloom</span></a>
   <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav">Menu</button>
   <nav id="site-nav" class="site-nav" aria-label="Main"><a href="/index.html#chapters">Chapters</a><a href="/index.html#ask">Ask Bloom</a><a href="/index.html#family">Family</a><a href="/privacy.html">Privacy</a><a href="/support.html" aria-current="page">Support</a></nav>
+  <nav class="lang-switch" aria-label="Language"><a href="/support.html" hreflang="en" lang="en" aria-current="true">EN</a><span aria-hidden="true"> · </span><a href="/cs/support.html" hreflang="cs" lang="cs">CS</a><span aria-hidden="true"> · </span><a href="/ru/support.html" hreflang="ru" lang="ru">RU</a><span aria-hidden="true"> · </span><a href="/th/support.html" hreflang="th" lang="th">TH</a><span aria-hidden="true"> · </span><a href="/zh/support.html" hreflang="zh-Hans" lang="zh-Hans">中文</a></nav>
 </div></header>
 <main id="main">
 <section class="wrap page-head narrow">
@@ -44,7 +51,7 @@
 
 <section class="wrap narrow section-sm" id="message">
   <h2>Send a message</h2>
-  <form id="contact" class="card form-card" novalidate action="#" method="post">
+  <form id="contact" class="card form-card" novalidate action="#" method="post" data-msg="{&quot;email&quot;:&quot;Please enter your email.&quot;,&quot;emailBad&quot;:&quot;That email doesn't look right.&quot;,&quot;type&quot;:&quot;Please choose what it is about.&quot;,&quot;short&quot;:&quot;Please write a little more.&quot;,&quot;long&quot;:&quot;Please keep it under {max} characters.&quot;,&quot;sending&quot;:&quot;Sending…&quot;,&quot;send&quot;:&quot;Send message&quot;,&quot;thanks&quot;:&quot;Thank you — your message is on its way. We'll answer at {email}.&quot;,&quot;fail&quot;:&quot;It didn't go through. Please try again, or write to {support}.&quot;,&quot;notYet&quot;:&quot;The form isn't sending yet.&quot;,&quot;didnt&quot;:&quot;It didn't go through.&quot;,&quot;copied&quot;:&quot;Copied&quot;,&quot;copyFail&quot;:&quot;Select and copy the text above&quot;,&quot;count&quot;:&quot;{n} of {max}&quot;,&quot;cut&quot;:&quot;…(the full message is copied — paste it here)&quot;}">
     <div class="field">
       <label for="c-email">Your email</label>
       <input id="c-email" name="email" type="email" autocomplete="email" required aria-describedby="c-email-hint c-email-err">
@@ -111,10 +118,9 @@
   <h2>Rate Bloom</h2>
   <p>A few words in the store help other women find Bloom.</p>
   <div class="badges">
-    <span class="badge" data-store="appStore" aria-disabled="true"><img src="/img/badges/app-store.svg" width="144" height="48" alt="Download on the App Store"></span>
-    <span class="badge" data-store="googlePlay" aria-disabled="true"><img src="/img/badges/google-play.svg" width="162" height="48" alt="Get it on Google Play"></span>
+    <a class="badge" data-store="appStore" href="https://apps.apple.com/app/id6833483759"><img src="/img/badges/app-store.svg" width="144" height="48" alt="Download on the App Store"></a>
+    <a class="badge" data-store="googlePlay" href="https://play.google.com/store/apps/details?id=family.bloomdays"><img src="/img/badges/google-play.svg" width="162" height="48" alt="Get it on Google Play"></a>
   </div>
-  <p class="badge-note">Coming soon to the App Store and Google Play.</p>
   <p class="fine">Bloom is general information, not medical advice, and not birth control.</p>
 </section>
 </main>

@@ -15,7 +15,13 @@ Their rules, as read that day:
   at least 40 px high on screen; clear space a quarter of its height; never modified, angled or animated.
 - Google: at least 28 px high; the same size or larger than the other badges beside it; clear space a quarter of its height;
   never recoloured or rearranged; solid backgrounds only.
-- Both badges are shown 48 px high. While a store has no listing, its badge has no link (`js/site.js`, `STORE`).
+- Both badges are shown 48 px high and link to the listings (`build.js` and `js/site.js`, `STORE`): Google Play's
+  `details?id=family.bloomdays` and the App Store's `apps.apple.com/app/id6833483759` (Bloom's Apple ID; it answers once Apple approves the app).
+- The other languages (`img/badges/cs|ru|th|zh/`): Apple's black badge in Czech, Russian, Thai and Simplified Chinese as SVG, unchanged,
+  from Apple's badge tool (toolbox.marketingtools.apple.com, `download-on-the-app-store/black/<cs-cz|ru-ru|th-th|zh-cn>`, read 2026-11-13);
+  Google's badge in Czech, Russian, Thai and Chinese (China) as PNG from play.google.com/intl/en_us/badges/static/images/badges/
+  `<cs|ru|th|zh-cn>_badge_web_generic.png` (read 2026-11-13; no SVG is offered without a Partner Marketing Hub login) — only its
+  transparent top and bottom rows trimmed (646 × 192 px, four times the 48 px it is shown at). The artwork is not changed.
 
 ## The support form
 

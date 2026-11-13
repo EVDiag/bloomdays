@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="{{htmlLang}}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="theme-color" content="#f9f2e8">
+<title>{{@title}}</title>
+<meta name="description" content="{{@desc}}">
+{{{@robots}}}{{{@canon}}}{{{@alternates}}}<meta property="og:type" content="website">
+<meta property="og:site_name" content="Bloom">
+{{{@ogLocale}}}<meta property="og:title" content="{{@title}}">
+<meta property="og:description" content="{{@desc}}">
+<meta property="og:url" content="{{@ogUrl}}">
+<meta property="og:image" content="https://bloomdays.family/img/og.png">
+<link rel="icon" type="image/png" href="/favicon.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+{{{@preload}}}<link rel="stylesheet" href="/css/site.css">
+<script src="/js/site.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">{{frame.skip}}</a>
+<header class="site-head"><div class="wrap">
+  <a class="brand" href="{{root}}/index.html"><img src="/img/paint/logo.webp" width="40" height="40" alt=""> <span>Bloom</span></a>
+  <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav">{{frame.menu}}</button>
+  <nav id="site-nav" class="site-nav" aria-label="{{frame.navLabel}}">{{{@nav}}}</nav>{{{@switch}}}
+</div></header>
+<main id="main">
+{{{@body}}}
+</main>
+<footer class="site-foot"><div class="wrap">
+  <p class="tagline">{{foot.tagline}}</p>
+  <p>{{{foot.links}}}</p>
+  <p class="fine">{{foot.warn}}</p>
+  <p class="fine">© 2026 Bloom</p>
+</div></footer>
+{{{@scripts}}}</body>
+</html>

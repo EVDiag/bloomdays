@@ -1,0 +1,87 @@
+<section class="wrap page-head narrow">
+  <h1>{{sup.title}}</h1>
+  <p class="lede">{{sup.lede}}</p>
+</section>
+
+<section class="wrap narrow section-sm" id="write">
+  <div class="card warm write-card">
+    <h2>{{sup.write.title}}</h2>
+    <p class="mail-line"><a href="mailto:support@bloomdays.family">support@bloomdays.family</a></p>
+    <p class="fine">{{sup.write.fine}}</p>
+  </div>
+</section>
+
+<section class="wrap narrow section-sm" id="message">
+  <h2>{{sup.form.title}}</h2>
+  <form id="contact" class="card form-card" novalidate action="#" method="post" data-msg="{{@json:msg}}">
+    <div class="field">
+      <label for="c-email">{{sup.f.email}}</label>
+      <input id="c-email" name="email" type="email" autocomplete="email" required aria-describedby="c-email-hint c-email-err">
+      <p id="c-email-hint" class="hint">{{sup.f.emailHint}}</p>
+      <p id="c-email-err" class="err" aria-live="polite"></p>
+    </div>
+    <fieldset class="field types" aria-describedby="c-type-err">
+      <legend>{{sup.f.type}}</legend>
+      <div class="chips" role="radiogroup" aria-label="{{sup.f.type}}">
+        <label class="chip"><input type="radio" name="type" value="bug"> {{type.bug}}</label>
+        <label class="chip"><input type="radio" name="type" value="idea"> {{type.idea}}</label>
+        <label class="chip"><input type="radio" name="type" value="feature"> {{type.feature}}</label>
+        <label class="chip"><input type="radio" name="type" value="feedback"> {{type.feedback}}</label>
+        <label class="chip"><input type="radio" name="type" value="other"> {{type.other}}</label>
+      </div>
+      <p id="c-type-err" class="err" aria-live="polite"></p>
+    </fieldset>
+    <div class="field">
+      <label for="c-msg">{{sup.f.msg}}</label>
+      <textarea id="c-msg" name="message" rows="7" maxlength="5000" required aria-describedby="c-msg-hint c-msg-err c-msg-count"></textarea>
+      <p id="c-msg-hint" class="hint" hidden>{{sup.f.bugHint}}</p>
+      <p id="c-msg-count" class="hint count" aria-live="polite"></p>
+      <p id="c-msg-err" class="err" aria-live="polite"></p>
+    </div>
+    <div class="hp" aria-hidden="true"><label for="c-web">{{sup.f.hp}}</label><input id="c-web" name="website" type="text" tabindex="-1" autocomplete="off"></div>
+    <button class="btn" type="submit">{{sup.f.send}}</button>
+    <p class="form-status" id="c-status" role="status" aria-live="polite"></p>
+    <p class="fine">{{{sup.f.privacy}}}</p>
+  </form>
+  <div id="c-fallback" class="card sage fallback" hidden>
+    <p><span data-fb-lead></span> {{{sup.fb.lead}}}</p>
+    <textarea readonly rows="7" aria-label="{{sup.fb.aria}}"></textarea>
+    <div class="fallback-acts">
+      <button class="btn" type="button" data-copy-msg>{{sup.fb.copy}}</button>
+      <a class="btn quiet" data-mailto href="mailto:support@bloomdays.family">{{sup.fb.mail}}</a>
+    </div>
+  </div>
+  <noscript><p>{{{sup.noscript}}}</p></noscript>
+</section>
+
+<section class="wrap narrow section-sm" id="faq">
+  <h2>{{sup.faq.title}}</h2>
+  <details><summary>{{faq.free.q}}</summary>
+    <p>{{faq.free.a}}</p></details>
+  <details><summary>{{faq.data.q}}</summary>
+    <p>{{{faq.data.a}}}</p></details>
+  <details><summary>{{faq.export.q}}</summary>
+    <p>{{{faq.export.a}}}</p></details>
+  <details><summary>{{faq.medical.q}}</summary>
+    <p>{{faq.medical.a}}</p></details>
+  <details><summary>{{faq.phones.q}}</summary>
+    <p>{{faq.phones.a}}</p></details>
+  <details><summary>{{faq.pro.q}}</summary>
+    <p>{{faq.pro.a}}</p></details>
+  <details><summary>{{faq.ai.q}}</summary>
+    <p>{{{faq.ai.a}}}</p></details>
+  <details><summary>{{faq.invite.q}}</summary>
+    <p>{{{faq.invite.a}}}</p></details>
+  <details><summary>{{faq.wrong.q}}</summary>
+    <p>{{{faq.wrong.a}}}</p></details>
+</section>
+
+<section class="wrap narrow section-sm" id="rate">
+  <h2>{{sup.rate.title}}</h2>
+  <p>{{sup.rate.p}}</p>
+  <div class="badges">
+    <a class="badge" data-store="appStore" href="{{@appStore}}"><img src="{{badge.as.src}}" width="{{badge.as.w}}" height="48" alt="{{badge.as.alt}}"></a>
+    <a class="badge" data-store="googlePlay" href="{{@googlePlay}}"><img src="{{badge.gp.src}}" width="{{badge.gp.w}}" height="48" alt="{{badge.gp.alt}}"></a>
+  </div>
+  <p class="fine">{{warn.general}}</p>
+</section>

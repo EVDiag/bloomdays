@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="theme-color" content="#f9f2e8">
+<title>支持 — Bloom</title>
+<meta name="description" content="问题、错误和想法：写信到 support@bloomdays.family，或在本页发送消息。每一条都有人读。">
+<link rel="canonical" href="https://bloomdays.family/zh/support.html">
+<link rel="alternate" hreflang="en" href="https://bloomdays.family/support.html">
+<link rel="alternate" hreflang="cs" href="https://bloomdays.family/cs/support.html">
+<link rel="alternate" hreflang="ru" href="https://bloomdays.family/ru/support.html">
+<link rel="alternate" hreflang="th" href="https://bloomdays.family/th/support.html">
+<link rel="alternate" hreflang="zh-Hans" href="https://bloomdays.family/zh/support.html">
+<link rel="alternate" hreflang="x-default" href="https://bloomdays.family/support.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Bloom">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:title" content="支持 — Bloom">
+<meta property="og:description" content="问题、错误和想法：写信到 support@bloomdays.family，或在本页发送消息。每一条都有人读。">
+<meta property="og:url" content="https://bloomdays.family/zh/support.html">
+<meta property="og:image" content="https://bloomdays.family/img/og.png">
+<link rel="icon" type="image/png" href="/favicon.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="stylesheet" href="/css/site.css">
+<script src="/js/site.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">跳到正文</a>
+<header class="site-head"><div class="wrap">
+  <a class="brand" href="/zh/index.html"><img src="/img/paint/logo.webp" width="40" height="40" alt=""> <span>Bloom</span></a>
+  <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav">菜单</button>
+  <nav id="site-nav" class="site-nav" aria-label="主导航"><a href="/zh/index.html#chapters">篇章</a><a href="/zh/index.html#ask">问问 Bloom</a><a href="/zh/index.html#family">家人</a><a href="/zh/privacy.html">隐私</a><a href="/zh/support.html" aria-current="page">支持</a></nav>
+  <nav class="lang-switch" aria-label="语言"><a href="/support.html" hreflang="en" lang="en">EN</a><span aria-hidden="true"> · </span><a href="/cs/support.html" hreflang="cs" lang="cs">CS</a><span aria-hidden="true"> · </span><a href="/ru/support.html" hreflang="ru" lang="ru">RU</a><span aria-hidden="true"> · </span><a href="/th/support.html" hreflang="th" lang="th">TH</a><span aria-hidden="true"> · </span><a href="/zh/support.html" hreflang="zh-Hans" lang="zh-Hans" aria-current="true">中文</a></nav>
+</div></header>
+<main id="main">
+<section class="wrap page-head narrow">
+  <h1>问题、错误和想法</h1>
+  <p class="lede">写信给我们，会有人认真读。</p>
+</section>
+
+<section class="wrap narrow section-sm" id="write">
+  <div class="card warm write-card">
+    <h2>写信给我们</h2>
+    <p class="mail-line"><a href="mailto:support@bloomdays.family">support@bloomdays.family</a></p>
+    <p class="fine">告诉我们你当时在做什么、原本期待什么。如果是应用里的问题，你的手机型号和 Bloom 里“我”页面的最后一行（显示版本号）能帮我们更快找到原因。</p>
+  </div>
+</section>
+
+<section class="wrap narrow section-sm" id="message">
+  <h2>发送消息</h2>
+  <form id="contact" class="card form-card" novalidate action="#" method="post" data-msg="{&quot;email&quot;:&quot;请输入你的电子邮箱。&quot;,&quot;emailBad&quot;:&quot;这个邮箱地址好像不对。&quot;,&quot;type&quot;:&quot;请选择是关于什么的。&quot;,&quot;short&quot;:&quot;请再多写一点。&quot;,&quot;long&quot;:&quot;请不要超过 {max} 个字符。&quot;,&quot;sending&quot;:&quot;正在发送…&quot;,&quot;send&quot;:&quot;发送消息&quot;,&quot;thanks&quot;:&quot;谢谢——你的消息已经在路上了。我们会回复到 {email}。&quot;,&quot;fail&quot;:&quot;没有发送成功。请再试一次，或写信到 {support}。&quot;,&quot;notYet&quot;:&quot;表单暂时还不能发送。&quot;,&quot;didnt&quot;:&quot;没有发送成功。&quot;,&quot;copied&quot;:&quot;已复制&quot;,&quot;copyFail&quot;:&quot;请选中上面的文字并复制&quot;,&quot;count&quot;:&quot;{n} / {max}&quot;,&quot;cut&quot;:&quot;…（完整消息已复制——请粘贴到这里）&quot;}">
+    <div class="field">
+      <label for="c-email">你的电子邮箱</label>
+      <input id="c-email" name="email" type="email" autocomplete="email" required aria-describedby="c-email-hint c-email-err">
+      <p id="c-email-hint" class="hint">用来回复你。不作他用。</p>
+      <p id="c-email-err" class="err" aria-live="polite"></p>
+    </div>
+    <fieldset class="field types" aria-describedby="c-type-err">
+      <legend>关于什么？</legend>
+      <div class="chips" role="radiogroup" aria-label="关于什么？">
+        <label class="chip"><input type="radio" name="type" value="bug"> 报告错误</label>
+        <label class="chip"><input type="radio" name="type" value="idea"> 新想法</label>
+        <label class="chip"><input type="radio" name="type" value="feature"> 功能建议</label>
+        <label class="chip"><input type="radio" name="type" value="feedback"> 反馈</label>
+        <label class="chip"><input type="radio" name="type" value="other"> 其他</label>
+      </div>
+      <p id="c-type-err" class="err" aria-live="polite"></p>
+    </fieldset>
+    <div class="field">
+      <label for="c-msg">你的消息</label>
+      <textarea id="c-msg" name="message" rows="7" maxlength="5000" required aria-describedby="c-msg-hint c-msg-err c-msg-count"></textarea>
+      <p id="c-msg-hint" class="hint" hidden>你的手机型号和 Bloom 里“我”页面的最后一行（显示版本号）能帮我们找到原因。</p>
+      <p id="c-msg-count" class="hint count" aria-live="polite"></p>
+      <p id="c-msg-err" class="err" aria-live="polite"></p>
+    </div>
+    <div class="hp" aria-hidden="true"><label for="c-web">请将此栏留空</label><input id="c-web" name="website" type="text" tabindex="-1" autocomplete="off"></div>
+    <button class="btn" type="submit">发送消息</button>
+    <p class="form-status" id="c-status" role="status" aria-live="polite"></p>
+    <p class="fine">你的邮箱只用于回复你。<a href="/zh/privacy.html#leaves">隐私</a></p>
+  </form>
+  <div id="c-fallback" class="card sage fallback" hidden>
+    <p><span data-fb-lead></span> 请写信到 <strong><a href="mailto:support@bloomdays.family">support@bloomdays.family</a></strong>——你的消息就在下面，可以直接复制。</p>
+    <textarea readonly rows="7" aria-label="你的消息，可直接复制"></textarea>
+    <div class="fallback-acts">
+      <button class="btn" type="button" data-copy-msg>复制消息</button>
+      <a class="btn quiet" data-mailto href="mailto:support@bloomdays.family">打开邮件应用</a>
+    </div>
+  </div>
+  <noscript><p>表单需要 JavaScript——或者写信到 <a href="mailto:support@bloomdays.family">support@bloomdays.family</a>。</p></noscript>
+</section>
+
+<section class="wrap narrow section-sm" id="faq">
+  <h2>常见问题</h2>
+  <details><summary>Bloom 免费吗？</summary>
+    <p>免费。Bloom 可以免费使用。Pro 是在商店里一次付费，包含完整的逐周旅程、胎动计数器和宫缩计时器。没有订阅。</p></details>
+  <details><summary>我的数据在哪里？</summary>
+    <p>在你的手机上。你记录的内容留在那里。只有功能需要的内容才会离开：你向 Bloom 提问时的问题，你给她打电话时的通话音频，以及在你开启记忆备份后她记忆的一份副本。<a href="/zh/privacy.html#leaves">哪些会离开你的手机</a>。</p></details>
+  <details><summary>怎样导出或删除我的数据？</summary>
+    <p>在应用里：我 → 隐私与数据。<em>导出我的数据</em>会把所有内容保存为一个文件；<em>删除我的全部数据</em>会把它们从手机上删除；<em>忘记 Bloom 学到的一切</em>会清除她的记忆，包括手机上和备份里的。保存在 Bloom 服务器上的任何内容，请写信告诉我们。</p></details>
+  <details><summary>Bloom 是医疗器械，还是避孕方法？</summary>
+    <p>都不是。Bloom 提供一般信息，帮你做好记录；它不做诊断，也不做治疗。Bloom 不是避孕方法：易孕窗口只是估算，不能用来避免怀孕。任何关于你健康的问题，请咨询你的医生或助产士。遇到紧急情况，请拨打当地的急救电话。</p></details>
+  <details><summary>Bloom 能在哪些手机上使用？</summary>
+    <p>iOS 16.4 或更高版本的 iPhone，以及装有 Google Play 的手机。</p></details>
+  <details><summary>Pro 怎样运作？</summary>
+    <p>Pro 只需购买一次，在 App Store 或 Google Play，由商店收款——Bloom 从不会看到你的银行卡。如果重新安装 Bloom 后 Pro 没有自动恢复，请带着商店的收据写信给我们，我们会帮你处理好。</p></details>
+  <details><summary>我向 Bloom 提问或给她打电话时会发生什么？</summary>
+    <p>你的问题连同一段简短的说明（你所在的篇章、第几周或第几天），会经过 Bloom 自己的服务器发送给 Anthropic，由它写出回答。通话从你的手机直接连到 OpenAI，由它提供 Bloom 的声音。任何内容都不会用于广告，Bloom 的服务器也不保存你的问题。<a href="/zh/privacy.html#leaves">详细说明</a>。</p></details>
+  <details><summary>邀请是怎样运作的？</summary>
+    <p>在应用里，我们 → 邀请好友 会给你一个邀请码和一个可以发送的链接。已经有 Bloom 的朋友在同一个地方的<em>有邀请码？</em>下输入邀请码。</p></details>
+  <details><summary>Bloom 说错了——我该怎么办？</summary>
+    <p>告诉我们。在上面选择<em>报告错误</em>或<em>反馈</em>，写下你问了什么、Bloom 怎么回答的。Bloom 可能会出错；最终以你的医生或助产士的意见为准。</p></details>
+</section>
+
+<section class="wrap narrow section-sm" id="rate">
+  <h2>为 Bloom 评分</h2>
+  <p>在商店里写几句话，能帮助更多女性找到 Bloom。</p>
+  <div class="badges">
+    <a class="badge" data-store="appStore" href="https://apps.apple.com/app/id6833483759"><img src="/img/badges/zh/app-store.svg" width="131" height="48" alt="App Store 下载"></a>
+    <a class="badge" data-store="googlePlay" href="https://play.google.com/store/apps/details?id=family.bloomdays"><img src="/img/badges/zh/google-play.png" width="162" height="48" alt="去商店下载 Google Play"></a>
+  </div>
+  <p class="fine">Bloom 提供的是一般信息，不是医疗建议，也不是避孕方法。</p>
+</section>
+</main>
+<footer class="site-foot"><div class="wrap">
+  <p class="tagline">Bloom——陪你走过成为母亲的每个季节。</p>
+  <p><a href="/zh/support.html">支持</a> · <a href="/zh/privacy.html">隐私</a> · <a href="/privacy.html">隐私政策（英文）</a> · <a href="/privacy.html#health-data">消费者健康数据（英文）</a> · <a href="/terms.html">使用条款（英文）</a> · <a href="mailto:support@bloomdays.family">support@bloomdays.family</a></p>
+  <p class="fine">Bloom 提供的是一般信息，不是医疗建议。Bloom 不是医疗器械，也不是避孕方法。</p>
+  <p class="fine">© 2026 Bloom</p>
+</div></footer>
+<script type="module" src="/js/support.js"></script>
+</body>
+</html>

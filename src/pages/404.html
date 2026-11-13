@@ -1,0 +1,20 @@
+<div class="wrap nf">
+  <img class="logo" src="/img/paint/logo.webp" width="96" height="96" alt="">
+  <section id="notfound">
+    <h1 data-t="nf.title">{{nf.title}}</h1>
+    <p class="lede" style="margin:0 auto 1.2em" data-t="nf.lede">{{nf.lede}}</p>
+    <p><a class="btn" href="{{root}}/index.html" data-t="nf.home">{{nf.home}}</a></p>
+  </section>
+  <section id="invite" hidden>
+    <h1 data-t="inv.title">{{inv.title}}</h1>
+    <div class="code-box"><span class="code" data-code></span> <button class="btn quiet" type="button" data-copy data-t="inv.copy">{{inv.copy}}</button></div>
+    <p class="lede" style="margin:0 auto 1em" data-t="inv.lede">{{inv.lede}}</p>
+    <div class="badges">
+      <a class="badge" data-store="appStore" href="{{@appStore}}"><span class="badge-text">App Store</span></a>
+      <a class="badge" data-store="googlePlay" href="{{@googlePlay}}"><span class="badge-text">Google Play</span></a>
+    </div>
+    <p class="fine" data-t="inv.steps">{{inv.steps}}</p>
+  </section>
+  <p class="fine" data-t="nf.haveApp">{{nf.haveApp}}</p>
+</div>
+{{{@i18n404}}}

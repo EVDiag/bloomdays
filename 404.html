@@ -32,22 +32,23 @@
 <div class="wrap nf">
   <img class="logo" src="/img/paint/logo.webp" width="96" height="96" alt="">
   <section id="notfound">
-    <h1>This page isn't here.</h1>
-    <p class="lede" style="margin:0 auto 1.2em">It may have moved, or the link was cut short.</p>
-    <p><a class="btn" href="/index.html">Go to Bloom's home page</a></p>
+    <h1 data-t="nf.title">This page isn't here.</h1>
+    <p class="lede" style="margin:0 auto 1.2em" data-t="nf.lede">It may have moved, or the link was cut short.</p>
+    <p><a class="btn" href="/index.html" data-t="nf.home">Go to Bloom's home page</a></p>
   </section>
   <section id="invite" hidden>
-    <h1>A little gift from a friend</h1>
-    <div class="code-box"><span class="code" data-code></span> <button class="btn quiet" type="button" data-copy>Copy</button></div>
-    <p class="lede" style="margin:0 auto 1em">A friend thinks Bloom will be good company for you. Install it and use this code.</p>
+    <h1 data-t="inv.title">A little gift from a friend</h1>
+    <div class="code-box"><span class="code" data-code></span> <button class="btn quiet" type="button" data-copy data-t="inv.copy">Copy</button></div>
+    <p class="lede" style="margin:0 auto 1em" data-t="inv.lede">A friend thinks Bloom will be good company for you. Install it and use this code.</p>
     <div class="badges">
-      <span class="badge" data-store="appStore" aria-disabled="true"><span class="badge-text">App Store</span></span>
-      <span class="badge" data-store="googlePlay" aria-disabled="true"><span class="badge-text">Google Play</span></span>
+      <a class="badge" data-store="appStore" href="https://apps.apple.com/app/id6833483759"><span class="badge-text">App Store</span></a>
+      <a class="badge" data-store="googlePlay" href="https://play.google.com/store/apps/details?id=family.bloomdays"><span class="badge-text">Google Play</span></a>
     </div>
-    <p class="fine">Installing with the Google Play button applies the code by itself. On iPhone, open Bloom, go to Us → Invite a friend → Have a code?, and enter it.</p>
+    <p class="fine" data-t="inv.steps">Installing with the Google Play button applies the code by itself. On iPhone, open Bloom, go to Us → Invite a friend → Have a code?, and enter it.</p>
   </section>
-  <p class="fine">Have the app? Open this link on your phone.</p>
+  <p class="fine" data-t="nf.haveApp">Have the app? Open this link on your phone.</p>
 </div>
+<script type="application/json" id="i18n-404">{"en":{"title":"Not found — Bloom","nf.title":"This page isn't here.","nf.lede":"It may have moved, or the link was cut short.","nf.home":"Go to Bloom's home page","nf.haveApp":"Have the app? Open this link on your phone.","inv.title":"A little gift from a friend","inv.lede":"A friend thinks Bloom will be good company for you. Install it and use this code.","inv.copy":"Copy","inv.copied":"Copied","inv.copyFail":"Copy failed — hold the code to copy it","inv.steps":"Installing with the Google Play button applies the code by itself. On iPhone, open Bloom, go to Us → Invite a friend → Have a code?, and enter it.","inv.docTitle":"A little gift from a friend — Bloom"},"cs":{"title":"Stránka nenalezena — Bloom","nf.title":"Tato stránka tu není.","nf.lede":"Možná se přestěhovala, nebo se odkaz zkrátil.","nf.home":"Na úvodní stránku Bloom","nf.haveApp":"Máš aplikaci? Otevři tento odkaz v telefonu.","inv.title":"Malý dárek od kamarádky","inv.lede":"Kamarádka si myslí, že ti Bloom bude dobrou společnicí. Nainstaluj si ji a použij tento kód.","inv.copy":"Kopírovat","inv.copied":"Zkopírováno","inv.copyFail":"Kopírování se nepovedlo — podrž prst na kódu a zkopíruj ho","inv.steps":"Když instaluješ přes tlačítko Google Play, kód se použije sám. Na iPhonu otevři Bloom, jdi do My → Pozvat kamarádku → Máš kód? a zadej ho.","inv.docTitle":"Malý dárek od kamarádky — Bloom"},"ru":{"title":"Страница не найдена — Bloom","nf.title":"Этой страницы здесь нет.","nf.lede":"Возможно, она переехала, или ссылка оборвалась.","nf.home":"На главную страницу Bloom","nf.haveApp":"Приложение уже есть? Открой эту ссылку на телефоне.","inv.title":"Маленький подарок от подруги","inv.lede":"Подруга думает, что Bloom станет тебе хорошей спутницей. Установи её и используй этот код.","inv.copy":"Скопировать","inv.copied":"Скопировано","inv.copyFail":"Не удалось скопировать — нажми на код и удерживай, чтобы скопировать","inv.steps":"При установке через кнопку Google Play код применится сам. На iPhone открой Bloom, перейди в Мы → Пригласить подругу → Есть код? и введи его.","inv.docTitle":"Маленький подарок от подруги — Bloom"},"th":{"title":"ไม่พบหน้านี้ — Bloom","nf.title":"ไม่มีหน้านี้อยู่","nf.lede":"อาจถูกย้ายไปแล้ว หรือลิงก์ถูกตัดสั้นไป","nf.home":"ไปที่หน้าแรกของ Bloom","nf.haveApp":"มีแอปแล้วใช่ไหม เปิดลิงก์นี้บนโทรศัพท์ของคุณ","inv.title":"ของขวัญเล็ก ๆ จากเพื่อน","inv.lede":"เพื่อนคิดว่า Bloom จะเป็นเพื่อนคู่ใจที่ดีของคุณ ติดตั้งแล้วใช้โค้ดนี้ได้เลยค่ะ","inv.copy":"คัดลอก","inv.copied":"คัดลอกแล้ว","inv.copyFail":"คัดลอกไม่สำเร็จ — กดค้างที่โค้ดเพื่อคัดลอก","inv.steps":"ถ้าติดตั้งผ่านปุ่ม Google Play โค้ดจะถูกใช้ให้เอง บน iPhone ให้เปิด Bloom ไปที่ พวกเรา → ชวนเพื่อน → มีโค้ดไหม? แล้วกรอกโค้ด","inv.docTitle":"ของขวัญเล็ก ๆ จากเพื่อน — Bloom"},"zh":{"title":"找不到页面 — Bloom","nf.title":"这个页面不在这里。","nf.lede":"它可能已经移走了，或者链接不完整。","nf.home":"前往 Bloom 首页","nf.haveApp":"已经有这个应用了？请在手机上打开这个链接。","inv.title":"来自朋友的一份小礼物","inv.lede":"一位朋友觉得 Bloom 会是你的好陪伴。安装后使用这个邀请码吧。","inv.copy":"复制","inv.copied":"已复制","inv.copyFail":"复制失败——长按邀请码即可复制","inv.steps":"通过 Google Play 按钮安装时，邀请码会自动生效。在 iPhone 上，打开 Bloom，前往 我们 → 邀请好友 → 有邀请码？，然后输入邀请码。","inv.docTitle":"来自朋友的一份小礼物 — Bloom"}}</script>
 </main>
 <footer class="site-foot"><div class="wrap">
   <p class="tagline">Bloom — a companion for every season of becoming a mother.</p>

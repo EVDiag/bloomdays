@@ -1,0 +1,121 @@
+<section class="wrap hero" id="top">
+  <div class="hero-text">
+    <p class="eyebrow">{{home.eyebrow}}</p>
+    <h1>Bloom</h1>
+    <p class="tagline hero-tag">{{home.tagline}}</p>
+    <p class="lede">{{home.lede}}</p>
+    <div class="badges">
+      <a class="badge" data-store="appStore" href="{{@appStore}}"><img src="{{badge.as.src}}" width="{{badge.as.w}}" height="48" alt="{{badge.as.alt}}"></a>
+      <a class="badge" data-store="googlePlay" href="{{@googlePlay}}"><img src="{{badge.gp.src}}" width="{{badge.gp.w}}" height="48" alt="{{badge.gp.alt}}"></a>
+    </div>
+  </div>
+  <div class="hero-art"><img src="/img/paint/pregnant-golden.webp" width="448" height="448" alt="{{home.heroAlt}}"></div>
+</section>
+
+<section class="wrap section" id="chapters">
+  <h2>{{home.ch.title}}</h2>
+  <p class="lede">{{home.ch.lede}}</p>
+  <div class="grid chapters">
+    <article class="card chapter">
+      <img class="ch-art" src="/img/paint/cycle.webp" width="448" height="448" alt="" loading="lazy">
+      <div class="ch-head"><img class="ch-logo" src="/img/paint/logo.webp" width="44" height="44" alt="" loading="lazy"><h3>{{app:mode.cycle}}</h3></div>
+      <p>{{home.ch.cycle}}</p>
+    </article>
+    <article class="card chapter">
+      <img class="ch-art" src="/img/paint/ttc.webp" width="448" height="448" alt="" loading="lazy">
+      <div class="ch-head"><img class="ch-logo" src="/img/paint/logo-trying.webp" width="44" height="44" alt="" loading="lazy"><h3>{{app:mode.ttc}}</h3></div>
+      <p>{{home.ch.ttc}}</p>
+    </article>
+    <article class="card chapter">
+      <img class="ch-art" src="/img/paint/pregnant-golden.webp" width="448" height="448" alt="" loading="lazy">
+      <div class="ch-head"><img class="ch-logo" src="/img/paint/logo-pregnant.webp" width="44" height="44" alt="" loading="lazy"><h3>{{app:mode.pregnant}}</h3></div>
+      <p>{{home.ch.pregnant}}</p>
+    </article>
+    <article class="card chapter">
+      <img class="ch-art" src="/img/paint/newborn-golden.webp" width="448" height="448" alt="" loading="lazy">
+      <div class="ch-head"><img class="ch-logo" src="/img/paint/logo-newborn.webp" width="44" height="44" alt="" loading="lazy"><h3>{{app:mode.newborn}}</h3></div>
+      <p>{{home.ch.newborn}}</p>
+    </article>
+    <article class="card chapter">
+      <img class="ch-art" src="/img/paint/peri.webp" width="448" height="448" alt="" loading="lazy">
+      <div class="ch-head"><img class="ch-logo" src="/img/paint/logo-peri.webp" width="44" height="44" alt="" loading="lazy"><h3>{{app:mode.peri}}</h3></div>
+      <p>{{home.ch.peri}}</p>
+    </article>
+  </div>
+  <p class="fine quiet-line">{{home.ch.loss}}</p>
+</section>
+
+<section class="section ask-band" id="ask">
+  <div class="wrap split">
+    <div>
+      <h2>{{home.ask.title}}</h2>
+      <p class="lede">{{home.ask.lede}}</p>
+      <ul class="ticks">
+        <li>{{home.ask.t1}}</li>
+        <li>{{home.ask.t2}}</li>
+        <li>{{home.ask.t3}}</li>
+      </ul>
+      <p class="fine">{{{ask.flow}}}</p>
+    </div>
+    <figure class="phone" data-screen="ask"><img src="{{@shots}}/ask.webp" width="390" height="844" alt="{{home.ask.shotAlt}}" loading="lazy"></figure>
+  </div>
+</section>
+
+<section class="wrap section" id="family">
+  <div class="split reverse">
+    <div>
+      <h2>{{home.fam.title}}</h2>
+      <p class="lede">{{home.fam.lede}}</p>
+      <ul class="ticks">
+        <li>{{{home.fam.t1}}}</li>
+        <li>{{{home.fam.t2}}}</li>
+        <li>{{{home.fam.t3}}}</li>
+        <li>{{{home.fam.t4}}}</li>
+      </ul>
+      <p class="fine">{{home.fam.fine}}</p>
+      <div class="faces">
+        <img src="/img/paint/av-woman-warm.webp" width="64" height="64" alt="" loading="lazy">
+        <img src="/img/paint/av-man-bronze.webp" width="64" height="64" alt="" loading="lazy">
+        <img src="/img/paint/av-gran-light.webp" width="64" height="64" alt="" loading="lazy">
+        <img src="/img/paint/av-grandpa-deep.webp" width="64" height="64" alt="" loading="lazy">
+        <img src="/img/paint/av-child-golden.webp" width="64" height="64" alt="" loading="lazy">
+      </div>
+    </div>
+    <figure class="phone" data-screen="us"><img src="{{@shots}}/us.webp" width="390" height="844" alt="{{home.fam.shotAlt}}" loading="lazy"></figure>
+  </div>
+</section>
+
+<section class="section privacy-band" id="privacy">
+  <div class="wrap split">
+    <div>
+      <h2>{{home.priv.title}}</h2>
+      <ul class="ticks">
+        <li>{{home.priv.t1}}</li>
+        <li>{{home.priv.t2}}</li>
+        <li>{{home.priv.t3}}</li>
+        <li>{{home.priv.t4}}</li>
+      </ul>
+      <p><a href="{{root}}/privacy.html">{{home.priv.link}}</a></p>
+    </div>
+    <img class="band-art" src="/img/paint/ui-lock.webp" width="120" height="160" alt="" loading="lazy">
+  </div>
+</section>
+
+<section class="wrap section" id="pro">
+  <div class="card warm pro-card">
+    <h2>{{home.pro.title}}</h2>
+    <p>{{home.pro.p}}</p>
+    <p class="fine">{{home.pro.fine}}</p>
+  </div>
+  <div class="screens">
+    <figure class="phone" data-screen="today-pregnant"><img src="{{@shots}}/today-pregnant.webp" width="390" height="844" alt="{{home.shot.today}}" loading="lazy"></figure>
+    <figure class="phone" data-screen="trying-today"><img src="{{@shots}}/trying-today.webp" width="390" height="844" alt="{{home.shot.trying}}" loading="lazy"></figure>
+    <figure class="phone" data-screen="newborn-now"><img src="{{@shots}}/newborn-now.webp" width="390" height="844" alt="{{home.shot.newborn}}" loading="lazy"></figure>
+  </div>
+</section>
+
+<section class="wrap section narrow" id="get">
+  <h2>{{home.get.title}}</h2>
+  <p>{{{home.get.p}}}</p>
+  <p class="fine">{{warn.general}} {{warn.askDoctor}} {{warn.emergency}}</p>
+</section>
