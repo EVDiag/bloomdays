@@ -1,0 +1,2 @@
+# Keep the generated pages LF on every computer, so build.js --check compares like with like
+* text=auto eol=lf
