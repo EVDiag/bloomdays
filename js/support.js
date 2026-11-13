@@ -1,14 +1,12 @@
-// bloomdays.family — the support form. Built whole; it does not send until SEND is true and /api/contact answers.
-const SEND = false;
-const ENDPOINT = '/api/contact';
+// bloomdays.family — the support form. It sends to the temporary sender (a Cloudflare Worker, bloomdays-contact) until the site
+// moves to Cloudflare; then ENDPOINT becomes '/api/contact'. SEND = false shows the copy-and-email box instead of sending.
+const SEND = true;
+const ENDPOINT = 'https://bloomdays-contact.evdiag.workers.dev/api/contact';
 const MIN_MS = 3000, TIMEOUT_MS = 15000, MAX_LEN = 5000, MIN_LEN = 10, MAILTO_MAX = 1500;
 const EMAIL = 'support@bloomdays.family';
 const LABELS = { bug: 'Report a bug', idea: 'New idea', feature: 'Feature request', feedback: 'Feedback', other: 'Something else' };
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
-// For checks on this machine only: ?send=1 turns sending on at localhost, never on the real site.
-const local = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
-const sending = () => SEND || (local && new URLSearchParams(location.search).get('send') === '1');
 const shownAt = Date.now();
 
 function collect(form) {
@@ -92,13 +90,14 @@ if (form) {
     const e = validate(d);
     showErrors(e);
     if (Object.keys(e).length) return;
-    if (!sending()) {
+    const showFallback = lead => {
+      fb.querySelector('[data-fb-lead]').textContent = lead;
       fb.querySelector('textarea').value = fallbackText(d);
       fb.querySelector('[data-mailto]').setAttribute('href', mailtoHref(d));
       fb.hidden = false;
       fb.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-      return;
-    }
+    };
+    if (!SEND) { showFallback("The form isn't sending yet."); return; }
     const thanks = () => {
       const p = document.createElement('div');
       p.className = 'card sage thanks';
@@ -111,7 +110,7 @@ if (form) {
     const r = await send(d);
     busy = false; btn.disabled = false; btn.textContent = 'Send message';
     if (r === 'ok') thanks();
-    else status.textContent = `It didn't go through. Please try again, or write to ${EMAIL}.`;
+    else { status.textContent = `It didn't go through. Please try again, or write to ${EMAIL}.`; showFallback("It didn't go through."); }
   });
 
   fb.querySelector('[data-copy-msg]').addEventListener('click', async ev => {

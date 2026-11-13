@@ -16,3 +16,10 @@ Their rules, as read that day:
 - Google: at least 28 px high; the same size or larger than the other badges beside it; clear space a quarter of its height;
   never recoloured or rearranged; solid backgrounds only.
 - Both badges are shown 48 px high. While a store has no listing, its badge has no link (`js/site.js`, `STORE`).
+
+## The support form
+
+`js/support.js` posts to a small Cloudflare Worker, `bloomdays-contact` (its source is in the Bloom-app repo,
+`tools/site/contact-worker/`), which sends each message through Resend to the support inbox. When the site moves to
+Cloudflare (`claude/bloom-website-move.md`), `ENDPOINT` becomes `/api/contact` and that Worker is deleted.
+`const SEND = false;` turns sending off: the page then offers the copy-and-email box instead.

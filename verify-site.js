@@ -223,6 +223,8 @@ async function main() {
         check(`${f}: no @import`, !/@import/.test(s));
         check(`${f}: no url() to another host`, !/url\(\s*['"]?(https?:)?\/\//i.test(s));
         check(`${f}: no fetch to another host`, !/fetch\(\s*['"`](https?:)?\/\//.test(s));
+        const hosts = [...new Set([...s.matchAll(/https?:\/\/([a-z0-9.-]+)/gi)].map(m => m[1]))];
+        check(`${f}: names only known hosts`, hosts.every(h => ['play.google.com', 'bloomdays-contact.evdiag.workers.dev'].includes(h)), hosts.join(' '));
         check(`${f}: adds no script, frame or stylesheet`, !/createElement\(\s*['"](script|iframe|link)['"]/.test(s) && !/import\(\s*['"`]https?:/.test(s));
       }
     }
@@ -348,7 +350,8 @@ SECTIONS.push(async () => {
   const hp = between(main, /<div class="hp" aria-hidden="true">[\s\S]*?<\/div>/);
   check('honeypot inside aria-hidden .hp', /name="website"/.test(hp) && /tabindex="-1"/.test(hp) && /autocomplete="off"/.test(hp) && /Leave this field empty/.test(hp));
   check('.hp moved off-screen, not display:none', /\.hp\s*\{[^}]*left:\s*-10000px/.test(read('css/site.css')) && !/\.hp\s*\{[^}]*display:\s*none/.test(read('css/site.css')));
-  check('support.js: const SEND = false;', exists('js/support.js') && /const SEND = false;/.test(read('js/support.js')));
+  check('support.js: const SEND = true;', exists('js/support.js') && /const SEND = true;/.test(read('js/support.js')));
+  check('support.js: the temporary sender', exists('js/support.js') && read('js/support.js').includes("const ENDPOINT = 'https://bloomdays-contact.evdiag.workers.dev/api/contact';"));
   check('support.js loaded as a module', /<script type="module" src="\/js\/support\.js"><\/script>/.test(h));
   check('noscript line with the email', /<noscript>[\s\S]*support@bloomdays\.family[\s\S]*<\/noscript>/.test(main));
   check('nine common questions', (main.match(/<details/g) || []).length === 9);
@@ -392,16 +395,20 @@ SECTIONS.push(async () => {
     await p.focus('input[name="type"][value="idea"]'); await p.keyboard.press('ArrowRight');
     check('arrow keys move between the types', await p.evaluate(() => document.querySelector('input[name="type"]:checked').value === 'feature'));
   });
-  await withPage('/support.html', { permissions: ['clipboard-read', 'clipboard-write'] }, async p => {
+  await withPage('/support.html', { permissions: ['clipboard-read', 'clipboard-write'], before: async p => {
+    await p.clock.install({ time: new Date('2026-11-13T10:00:00Z') });
+    await p.route('**/api/contact', r => r.fulfill({ status: 500, body: 'x' }));
+  } }, async p => {
     const n = count(p);
-    await fill(p, GOOD);
-    await p.click('#contact button[type="submit"]');
-    check('SEND=false: the fallback shows', await p.locator('#c-fallback').isVisible());
-    check('SEND=false: it names the email', /support@bloomdays\.family/.test(await p.locator('#c-fallback').textContent()));
+    await fill(p, GOOD); await p.clock.runFor(4000);
+    await p.click('#contact button[type="submit"]'); await p.clock.runFor(500); await p.waitForTimeout(200);
+    check('a failed send: one request', n.v === 1);
+    check('a failed send: the copy-and-email box shows', await p.locator('#c-fallback').isVisible());
+    check('a failed send: the box names the email', /support@bloomdays\.family/.test(await p.locator('#c-fallback').textContent()));
+    check('a failed send: the box does not say the form is not sending yet', !/isn't sending yet/.test(await p.locator('#c-fallback').textContent()));
     const want = await p.evaluate(d => window.BloomSupport.fallbackText({ ...d, website: '', ms: 0, page: 'support' }), GOOD);
-    check('SEND=false: the text to copy is fallbackText', (await p.inputValue('#c-fallback textarea')) === want);
-    check('SEND=false: the fields are still filled', (await p.inputValue('#c-msg')) === GOOD.message && (await p.inputValue('#c-email')) === GOOD.email);
-    check('SEND=false: no request', n.v === 0);
+    check('a failed send: the text to copy is fallbackText', (await p.inputValue('#c-fallback textarea')) === want);
+    check('a failed send: the fields are still filled', (await p.inputValue('#c-msg')) === GOOD.message && (await p.inputValue('#c-email')) === GOOD.email);
     await p.click('#c-fallback [data-copy-msg]'); await p.waitForTimeout(100);
     check('Copy message copies it', (await p.evaluate(() => navigator.clipboard.readText())) === want);
     const long = await p.evaluate(() => {
@@ -415,8 +422,8 @@ SECTIONS.push(async () => {
     const emo = await p.evaluate(() => { try { return window.BloomSupport.mailtoHref({ email: 'a@b.co', type: 'bug', message: 'x'.repeat(1499) + '🌸' + 'tail' }); } catch (e) { return 'THREW ' + e.message; } });
     check('an emoji at the 1,500 cut does not break the mailto', !emo.startsWith('THREW') && decodeURIComponent(emo.split('body=')[1]).startsWith('x'.repeat(1499)), emo.slice(0, 40));
   });
-  // sending, with the switch turned on for localhost only
-  const sendPage = async (answer, fn) => withPage('/support.html?send=1', { before: async p => {
+  // sending (the sender's answer is played by the test)
+  const sendPage = async (answer, fn) => withPage('/support.html', { before: async p => {
     await p.clock.install({ time: new Date('2026-11-13T10:00:00Z') });
     await p.route('**/api/contact', answer);
   } }, fn);
@@ -440,6 +447,7 @@ SECTIONS.push(async () => {
       await fill(p, GOOD); await p.clock.runFor(4000);
       await p.click('#contact button[type="submit"]'); await p.clock.runFor(500); await p.waitForTimeout(200);
       check(`${label} → the fail line`, /It didn't go through\. Please try again, or write to support@bloomdays\.family\./.test(await p.locator('#contact').textContent()));
+      check(`${label} → the copy-and-email box`, await p.locator('#c-fallback').isVisible());
       check(`${label} → fields kept, Send enabled`, (await p.inputValue('#c-msg')) === GOOD.message && await p.locator('#contact button[type="submit"]').isEnabled());
     });
   }
@@ -463,7 +471,7 @@ SECTIONS.push(async () => {
     check('JS off: the noscript line shows (Review Focus 1)', /The form needs JavaScript — or write to support@bloomdays\.family\./.test(await p.locator('main').textContent()));
     check('JS off: the form is hidden (it cannot send without its script)', !(await p.locator('#contact').isVisible()));
   });
-  check('?send=1 is honoured on localhost only', exists('js/support.js') && /location\.hostname === 'localhost' \|\| location\.hostname === '127\.0\.0\.1'/.test(read('js/support.js')));
+  check('no test switch left in support.js', exists('js/support.js') && !/send=1|location\.hostname/.test(read('js/support.js')));
 });
 
 // ── §9 the privacy policy
@@ -495,6 +503,7 @@ SECTIONS.push(async () => {
   const hd = sec('health-data');
   for (const w of ['sex', 'temperature', 'ovulation test', 'medicines', 'pregnancy loss', 'due date']) check(`#health-data names ${w}`, hd.includes(w));
   check('#backup: facts, past moments and open threads — not the notes', /past moments/.test(sec('backup')) && /never your logs, your chats or the dated conversation notes/.test(sec('backup')) && (sec('backup').match(/notes/g) || []).length === 1);
+  check('#support: the form is delivered by Resend through Bloom\'s small sender on Cloudflare', /Resend/.test(sec('support')) && /Cloudflare/.test(sec('support')) && !/Until the form sends/.test(sec('support')));
   check('#security: the backup is not end-to-end… said honestly', /not encrypted so that only you can read it/i.test(sec('security')));
 });
 
