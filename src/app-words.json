@@ -516,5 +516,47 @@
     "ru": "Поделиться тотализатором",
     "th": "แชร์การทาย",
     "zh": "分享猜猜看"
+  },
+  "per.title": {
+    "en": "Your period",
+    "cs": "Tvoje menstruace",
+    "ru": "Твоя менструация",
+    "th": "ประจำเดือนของคุณ",
+    "zh": "你的经期"
+  },
+  "per.first": {
+    "en": "First day",
+    "cs": "První den",
+    "ru": "Первый день",
+    "th": "วันแรก",
+    "zh": "第一天"
+  },
+  "per.last": {
+    "en": "Last day",
+    "cs": "Poslední den",
+    "ru": "Последний день",
+    "th": "วันสุดท้าย",
+    "zh": "最后一天"
+  },
+  "per.ended.today": {
+    "en": "It ended today",
+    "cs": "Skončila dnes",
+    "ru": "Закончилась сегодня",
+    "th": "หมดวันนี้แล้ว",
+    "zh": "今天结束了"
+  },
+  "per.remove": {
+    "en": "Remove this period",
+    "cs": "Odebrat tuto menstruaci",
+    "ru": "Удалить эту менструацию",
+    "th": "ลบประจำเดือนครั้งนี้",
+    "zh": "删除这次经期"
+  },
+  "per.change": {
+    "en": "Change this period",
+    "cs": "Upravit tuto menstruaci",
+    "ru": "Изменить эту менструацию",
+    "th": "แก้ไขประจำเดือนครั้งนี้",
+    "zh": "修改这次经期"
   }
 }
