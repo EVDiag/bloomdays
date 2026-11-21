@@ -68,6 +68,25 @@ function initMenu() {
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && nav.classList.contains('open')) { close(); btn.focus(); } });
 }
 
+const INVITE_BASE = 'https://bloomdays.family/r/';
+// Copies text inside her tap: the Clipboard API, or the older way where a browser has none. Settles either way.
+function copyText(text) {
+  try { if (navigator.clipboard && navigator.clipboard.writeText) return navigator.clipboard.writeText(text); } catch { /* the older way */ }
+  return new Promise((ok, no) => {
+    const t = document.createElement('textarea');
+    t.value = text;
+    t.setAttribute('readonly', '');
+    t.style.cssText = 'position:fixed;top:0;left:0;opacity:0;font-size:16px';
+    document.body.appendChild(t);
+    t.select();
+    t.setSelectionRange(0, text.length);
+    let done = false;
+    try { done = document.execCommand('copy'); } catch { done = false; }
+    t.remove();
+    if (done) ok(); else no(new Error('copy'));
+  });
+}
+
 function initInvite() {
   const box = document.getElementById('invite'), nf = document.getElementById('notfound');
   if (!box || !nf || !W404) return;
@@ -76,6 +95,19 @@ function initInvite() {
   box.querySelectorAll('[data-code]').forEach(el => { el.textContent = code; });
   const play = box.querySelector('[data-store="googlePlay"]');
   if (play) setBadge(play, `https://play.google.com/store/apps/details?id=${PLAY_ID}&referrer=${encodeURIComponent('code=' + code)}`);
+  // App Store: her tap copies the invite link (a page may copy only on a tap), then goes to the App Store.
+  // A new iPhone's Bloom reads https://bloomdays.family/r/CODE from the clipboard once, at the end of onboarding (b64).
+  const store = box.querySelector('[data-store="appStore"]');
+  if (store) store.addEventListener('click', e => {
+    const href = store.getAttribute('href');
+    const copied = copyText(INVITE_BASE + code);
+    if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || !href) return;   // a new tab: the link opens as usual
+    e.preventDefault();
+    let gone = false;
+    const go = () => { if (!gone) { gone = true; location.href = href; } };
+    copied.then(go, go);
+    setTimeout(go, 800);   // a copy that never answers does not keep her here
+  });
   const copy = box.querySelector('[data-copy]');
   if (copy) copy.addEventListener('click', async () => {
     try { await navigator.clipboard.writeText(code); copy.textContent = W404['inv.copied']; }

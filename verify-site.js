@@ -230,7 +230,7 @@ async function main() {
         check(`${f}: no url() to another host`, !/url\(\s*['"]?(https?:)?\/\//i.test(s));
         check(`${f}: no fetch to another host`, !/fetch\(\s*['"`](https?:)?\/\//.test(s));
         const hosts = [...new Set([...s.matchAll(/https?:\/\/([a-z0-9.-]+)/gi)].map(m => m[1]))];
-        check(`${f}: names only known hosts`, hosts.every(h => ['play.google.com', 'apps.apple.com', 'bloomdays-contact.evdiag.workers.dev'].includes(h)), hosts.join(' '));
+        check(`${f}: names only known hosts`, hosts.every(h => ['play.google.com', 'apps.apple.com', 'bloomdays-contact.evdiag.workers.dev', 'bloomdays.family'].includes(h)), hosts.join(' '));
         check(`${f}: adds no script, frame or stylesheet`, !/createElement\(\s*['"](script|iframe|link)['"]/.test(s) && !/import\(\s*['"`]https?:/.test(s));
       }
     }
@@ -1245,6 +1245,67 @@ SECTIONS.push(async () => {
   check('assetlinks.json still unchanged beside it', sha256(readBuf('.well-known/assetlinks.json')) === ASSETLINKS_SHA);
   const nf = await get('/r/ANNA42');
   check('GET /r/ANNA42 still → the 404 invite page', nf.status === 404 && nf.body.equals(readBuf('404.html')));
+});
+
+// ── §18 the invite's App Store button copies the invite link, then goes to the App Store (the app chat's b64, Roman 2026-11-21:
+//    a new iPhone reads https://bloomdays.family/r/CODE from the clipboard once, at the end of onboarding; a page may copy only on a tap)
+SECTIONS.push(async () => {
+  if (!browserSection(18, 'the invite — App Store copies the link')) return;
+  const STORE_RE = /^https:\/\/apps\.apple\.com\/app\/id6833483759$/;
+  const opts = (extra) => ({ permissions: ['clipboard-read', 'clipboard-write'], ...extra,
+    before: async page => { await page.route('https://apps.apple.com/**', r => r.fulfill({ status: 200, contentType: 'text/html', body: 'STORE' }));
+      await page.route('https://play.google.com/**', r => r.fulfill({ status: 200, contentType: 'text/html', body: 'PLAY' }));
+      if (extra && extra.init) await page.addInitScript(extra.init); } });
+  const tapStore = async (page, which) => {
+    await page.evaluate(() => navigator.clipboard && navigator.clipboard.writeText('before').catch(() => {}));
+    await page.locator(`[data-store="${which}"]:visible`).first().click();
+    try { await page.waitForURL(u => /apps\.apple\.com|play\.google\.com/.test(String(u)), { timeout: 2500 }); } catch { /* checked below */ }
+    return page.url();
+  };
+  const clip = page => page.context().newPage().then(async p2 => { await p2.goto(ORIGIN + '/nothing'); const t = await p2.evaluate(() => navigator.clipboard.readText()); await p2.close(); return t; });
+  for (const [p, want] of [['/r/ABC123', 'https://bloomdays.family/r/ABC123'], ['/r/abc123/?utm_source=whatsapp', 'https://bloomdays.family/r/ABC123'], ['/r/ANNA42', 'https://bloomdays.family/r/ANNA42']]) {
+    await withPage(p, opts(), async page => {
+      const href = await page.locator('#invite [data-store="appStore"]').getAttribute('href');
+      check(`${p}: the App Store button still links the App Store`, STORE_RE.test(href || ''), href);
+      const url = await tapStore(page, 'appStore');
+      check(`${p}: a tap on App Store goes to the App Store`, STORE_RE.test(url), url);
+      const c = await clip(page);
+      check(`${p}: …after copying exactly ${want}`, c === want, c);
+      check(`${p}: the copied link is what b64 reads (https://bloomdays.family/r/CODE)`, /^https:\/\/bloomdays\.family\/r\/[A-Z0-9]{4,12}$/.test(c), c);
+    });
+  }
+  // the copy refused (no clipboard permission): she still reaches the App Store, at once
+  await withPage('/r/ABC123', { ...opts(), permissions: [] }, async page => {
+    const t0 = Date.now(), url = await tapStore(page, 'appStore');
+    check('copy refused: a tap on App Store still goes to the App Store, within 1.5 s', STORE_RE.test(url) && Date.now() - t0 < 1500, `${url} ${Date.now() - t0} ms`);
+  });
+  // no Clipboard API (an old in-app browser): the page copies the link by the older way, in the same tap, and goes on
+  await withPage('/r/ABC123', opts({ init: () => { Object.defineProperty(Navigator.prototype, 'clipboard', { get: () => undefined, configurable: true });
+      const ex = document.execCommand.bind(document); document.execCommand = (c, ...a) => { if (c === 'copy') console.log('COPY:' + ((document.activeElement && document.activeElement.value) || String(getSelection()))); return ex(c, ...a); }; } }), async page => {
+    const seen = [];
+    page.on('console', m => { if (m.text().startsWith('COPY:')) seen.push(m.text().slice(5)); });
+    await page.locator('#invite [data-store="appStore"]').click();
+    try { await page.waitForURL(u => /apps\.apple\.com/.test(String(u)), { timeout: 2500 }); } catch { /* below */ }
+    check('no Clipboard API: the older copy gets the link', seen.includes('https://bloomdays.family/r/ABC123'), JSON.stringify(seen));
+    check('no Clipboard API: still goes to the App Store', STORE_RE.test(page.url()), page.url());
+  });
+  // only the invite's App Store button copies: not Google Play, not the plain not-found
+  await withPage('/r/ABC123', opts(), async page => {
+    const url = await tapStore(page, 'googlePlay');
+    check('invite: Google Play goes to Play with the referrer, as before', /play\.google\.com\/store\/apps\/details\?id=family\.bloomdays&referrer=code%3DABC123/.test(url), url);
+    check('invite: Google Play copies nothing', (await clip(page)) === 'before');
+  });
+  await withPage('/nothing', opts(), async page => {
+    check('not-found: no App Store button to tap', await page.locator('[data-store="appStore"]:visible').count() === 0);
+  });
+  await withPage('/r/ABC123', { js: false }, async page => {
+    check('JS off: the App Store button is the plain App Store link', STORE_RE.test(await page.locator('#invite [data-store="appStore"]').getAttribute('href') || ''));
+  });
+  // the iPhone line that says where to type the code stays (the fallback when the copy is missed)
+  const W = JSON.parse(read('404.html').match(/<script type="application\/json" id="i18n-404">([\s\S]*?)<\/script>/)[1]);
+  const AW = JSON.parse(read('src/app-words.json'));
+  for (const l of Object.keys(W)) check(`${l}: the iPhone line is kept (where to type the code: ${['nav.us', 'menu.invite', 'invite.have'].map(k => AW[k][l]).join(' → ')})`,
+    ['nav.us', 'menu.invite', 'invite.have'].every(k => W[l]['inv.steps'].includes(AW[k][l])), W[l]['inv.steps']);
 });
 
 module.exports = { ROOT, PORT, PAGES, PAGES_SPEC, pageText, textOf, withPage, serve, resolveFile };
