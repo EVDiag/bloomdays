@@ -1227,5 +1227,25 @@ SECTIONS.push(async () => {
   }
 });
 
+// ── §17 iPhone links: apple-app-site-association hands https://bloomdays.family/r/CODE to Bloom (Team ID WVYCZK9F9V, Roman 2026-11-21)
+const AASA = { applinks: { details: [{ appIDs: ['WVYCZK9F9V.family.bloomdays'], components: [{ '/': '/r/*', comment: 'An invite: https://bloomdays.family/r/CODE' }] }] } };
+SECTIONS.push(async () => {
+  if (!section(17, 'iPhone links (apple-app-site-association)')) return;
+  const f = '.well-known/apple-app-site-association';
+  check(`${f} exists, no extension`, exists(f) && !exists(f + '.json'));
+  if (!exists(f)) return;
+  const raw = read(f);
+  let j = null; try { j = JSON.parse(raw); } catch (e) { /* below */ }
+  check(`${f} parses as JSON`, !!j);
+  check(`${f} is exactly Bloom's: WVYCZK9F9V.family.bloomdays, /r/*`, JSON.stringify(j) === JSON.stringify(AASA), JSON.stringify(j));
+  check(`${f}: UTF-8 without BOM, LF only, under 128 KB`, raw.charCodeAt(0) !== 0xFEFF && !raw.includes('\r') && readBuf(f).length < 128 * 1024);
+  check(`${f}: the Team ID is ten capitals and digits`, /^[A-Z0-9]{10}\.family\.bloomdays$/.test(((j || {}).applinks?.details?.[0]?.appIDs || [])[0] || ''));
+  const r = await get('/' + f);
+  check(`GET /${f} → 200, same bytes`, r.status === 200 && r.body.equals(readBuf(f)), `${r.status}`);
+  check('assetlinks.json still unchanged beside it', sha256(readBuf('.well-known/assetlinks.json')) === ASSETLINKS_SHA);
+  const nf = await get('/r/ANNA42');
+  check('GET /r/ANNA42 still → the 404 invite page', nf.status === 404 && nf.body.equals(readBuf('404.html')));
+});
+
 module.exports = { ROOT, PORT, PAGES, PAGES_SPEC, pageText, textOf, withPage, serve, resolveFile };
 if (require.main === module) main().catch(e => { console.error(e); console.log(`========== ${passed} passed, ${failed + 1} failed ==========`); process.exit(1); });

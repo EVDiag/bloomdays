@@ -1,0 +1,12 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["WVYCZK9F9V.family.bloomdays"],
+        "components": [
+          { "/": "/r/*", "comment": "An invite: https://bloomdays.family/r/CODE" }
+        ]
+      }
+    ]
+  }
+}

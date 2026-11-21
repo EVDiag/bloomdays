@@ -1,7 +1,7 @@
 # bloomdays.family
 
 The website of Bloom — a companion for every season of becoming a mother. Plain HTML and CSS, served by GitHub Pages
-from this folder (`CNAME`, `.nojekyll`). `/.well-known/assetlinks.json` is Android App Links' file: never change it.
+from this folder (`CNAME`, `.nojekyll`). `/.well-known/assetlinks.json` is Android App Links' file: never change it. `/.well-known/apple-app-site-association` (no extension) is the iPhone's: it hands `https://bloomdays.family/r/CODE` to Bloom (`WVYCZK9F9V.family.bloomdays`); `verify-site.js` §17 checks it.
 
 Check everything before a push: `node verify-site.js` (Node 22; the browser sections run where Playwright is installed,
 and say SKIP elsewhere). The last line is `========== N passed, M failed ==========`.
